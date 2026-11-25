@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>山吹祭 買い出し・在庫管理表｜ハイキングに行ってきた！</title>
+  <!-- Firebase SDK (Realtime Database リアルタイム同期用) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
     :root {
       --primary: #2d5a3c;
@@ -65,6 +68,7 @@
       font-weight: 700;
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 8px;
       cursor: pointer;
       user-select: none;
@@ -75,6 +79,14 @@
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .sync-badge {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
       font-weight: 600;
     }
 
@@ -150,6 +162,53 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* キーワード検索枠 */
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-width: 210px;
+      flex: 1 1 210px;
+      max-width: 300px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 6px 28px 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: #f9fafb;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 6px;
+      border: none;
+      background: #e5e7eb;
+      color: #4b5563;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .search-clear:hover {
+      background: #d1d5db;
     }
 
     .btn {
@@ -201,7 +260,7 @@
       font-size: 0.78rem;
     }
 
-    /* 顧問モード専用要素（通常時は非表示） */
+    /* 顧問モード専用要素（通常時は完全に非表示） */
     .admin-only {
       display: none !important;
     }
@@ -364,6 +423,11 @@
       cursor: grabbing;
     }
 
+    .drag-handle.is-disabled {
+      cursor: default;
+      opacity: 0.35;
+    }
+
     .move-btns {
       display: flex;
       flex-direction: column;
@@ -507,7 +571,7 @@
     }
 
     .qty-stepper input {
-      width: 44px;
+      width: 46px;
       text-align: center;
       padding: 5px 2px;
       border: 1px solid var(--border);
@@ -610,8 +674,24 @@
       margin-bottom: 2px;
     }
 
-    /* レスポンシブ（スマホ最適化） */
+    /* レスポンシブ（スマホ最適化・iPhoneズーム防止） */
     @media (max-width: 860px) {
+      /* iOS Safariの入力時自動拡大ズームを防ぐため16pxに設定 */
+      .field input,
+      .search-box input,
+      .item-name-input,
+      .memo-input,
+      .num-input,
+      .qty-stepper input {
+        font-size: 16px !important;
+      }
+
+      .search-box {
+        max-width: none;
+        width: 100%;
+        flex: 1 1 100%;
+      }
+
       .summary-grid {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -686,7 +766,7 @@
 
       .qty-col {
         flex: 1 1 34%;
-        min-width: 125px;
+        min-width: 132px;
       }
 
       .mobile-label {
@@ -703,7 +783,8 @@
       <div class="header-title" id="secretAdminTrigger">
         <span>🏔️ 山吹祭 買い出し・在庫管理</span>
         <span class="badge">ハイキングに行ってきた！</span>
-        <span class="admin-badge">顧問モード（削除可）</span>
+        <span class="sync-badge" id="syncStatus">🟡 接続準備中...</span>
+        <span class="admin-badge">顧問モード</span>
       </div>
       <div style="font-size: 0.8rem; opacity: 0.92; font-weight: 600;">
         補助金予算上限: 16,000円
@@ -738,7 +819,7 @@
       </div>
       <div class="field">
         <label for="newPrice">単価（税込・円）</label>
-        <input type="number" id="newPrice" value="110" min="0" step="1" required />
+        <input type="number" id="newPrice" value="110" min="0" step="1" inputmode="numeric" pattern="[0-9]*" required />
       </div>
       <div class="field field-memo">
         <label for="newMemo">メモ・用途（任意）</label>
@@ -748,7 +829,7 @@
     </form>
   </section>
 
-  <!-- フィルター・データ操作ツールバー -->
+  <!-- フィルター・検索・データ操作ツールバー -->
   <div class="toolbar">
     <div class="filter-group">
       <button type="button" class="btn btn-active" data-filter="all">すべて表示</button>
@@ -756,10 +837,16 @@
       <button type="button" class="btn" data-filter="bought">購入済のみ</button>
       <button type="button" class="btn" data-filter="skipped">買わないリスト</button>
     </div>
+
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="🔍 商品名・メモで検索..." />
+      <button type="button" class="search-clear" id="searchClearBtn" title="検索をクリア" style="display:none;">✕</button>
+    </div>
+
     <div class="filter-group">
       <button type="button" class="btn btn-sm" id="exportCsvBtn">📊 CSV出力</button>
-      <button type="button" class="btn btn-sm" id="exportJsonBtn">💾 バックアップ保存</button>
-      <button type="button" class="btn btn-sm" id="importJsonBtn">📂 復元</button>
+      <button type="button" class="btn btn-sm admin-only" id="exportJsonBtn">💾 バックアップ保存</button>
+      <button type="button" class="btn btn-sm admin-only" id="importJsonBtn">📂 復元</button>
       <input type="file" id="importFileInput" accept=".json" style="display:none" />
       <button type="button" class="btn btn-sm btn-danger admin-only" id="resetBtn">↺ 初期データに戻す</button>
     </div>
@@ -783,7 +870,18 @@
 </main>
 
 <script>
-  const STORAGE_KEY = 'yamabukisai_hiking_inventory_v1';
+  // Firebase設定
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqks3UeIxdQczTSYIjob5vX6KV8TUkyrw",
+    authDomain: "hiking-shopping.firebaseapp.com",
+    databaseURL: "https://hiking-shopping-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "hiking-shopping",
+    storageBucket: "hiking-shopping.firebasestorage.app",
+    messagingSenderId: "245402946402",
+    appId: "1:245402946402:web:48ff776d16498297baba3b"
+  };
+
+  const DB_PATH = 'yamabukisai_hiking_2026/items';
   const BUDGET_LIMIT = 16000;      // 確定した補助金予算上限
   const SKIP_MOVE_DELAY_MS = 2000; // 「買わない」チェック後、下段へ移動するまでの待機時間（2秒）
 
@@ -822,18 +920,24 @@
   // Excel初期28項目の計画個数マップ（常にこの値で固定）
   const FIXED_PLAN_QTY_MAP = new Map(INITIAL_ITEMS.map(item => [item.id, item.planQty]));
 
-  // 状態管理変数（※loadItems()より先に初期化）
+  // 状態管理変数
   const pendingSkipTimers = new Map();
   let currentFilter = 'all';
+  let searchQuery = '';
   let draggedItemId = null;
-  let items = loadItems();
+  let items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+  let itemsRef = null;
+  const isFirebaseConfigured = Boolean(
+    firebaseConfig.databaseURL &&
+    !firebaseConfig.databaseURL.includes('ここに')
+  );
 
-  // 顧問モード（削除ボタン表示）の初期化：URLに ?admin=1 があれば最初からON
+  // 顧問モードの初期化：URLに ?admin=1 があれば最初からON
   if (new URLSearchParams(window.location.search).get('admin') === '1') {
     document.body.classList.add('admin-mode');
   }
 
-  // 左上タイトルを5回連続タップ（クリック）で顧問モード（ゴミ箱表示）をON/OFF切替
+  // 左上タイトルを5回連続タップ（クリック）で顧問モードをON/OFF切替
   let secretTapCount = 0;
   let secretTapTimer = null;
   document.getElementById('secretAdminTrigger').addEventListener('click', () => {
@@ -851,27 +955,20 @@
 
   function syncPlanQty(list) {
     return list.map(item => {
-      if (FIXED_PLAN_QTY_MAP.has(item.id)) {
-        return { ...item, planQty: FIXED_PLAN_QTY_MAP.get(item.id) };
+      const base = {
+        id: Number(item.id),
+        name: String(item.name ?? ''),
+        price: Math.max(0, Math.floor(Number(item.price) || 0)),
+        boughtQty: Math.max(0, Math.floor(Number(item.boughtQty) || 0)),
+        skipped: Boolean(item.skipped),
+        memo: String(item.memo ?? '')
+      };
+      if (FIXED_PLAN_QTY_MAP.has(base.id)) {
+        return { ...base, planQty: FIXED_PLAN_QTY_MAP.get(base.id) };
       }
-      // 計画外（新規追加）項目は常に null（表示上は「-」）とする
-      return { ...item, planQty: null };
+      // 計画外（新規追加）項目は常に null（表示上は「-」）
+      return { ...base, planQty: null };
     });
-  }
-
-  function loadItems() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return normalizeOrder(syncPlanQty(parsed));
-        }
-      }
-    } catch (e) {
-      console.error('読み込みエラー:', e);
-    }
-    return JSON.parse(JSON.stringify(INITIAL_ITEMS));
   }
 
   function clearAllPendingTimers() {
@@ -890,11 +987,88 @@
     return [...upper, ...lower];
   }
 
-  function saveItems(shouldNormalize = true) {
-    if (shouldNormalize) {
-      items = normalizeOrder(items);
+  // トランザクションによる安全なリアルタイム更新（複数人同時タップ時の上書き防止）
+  function applyChange(mutator, { normalize = true } = {}) {
+    // 1. ローカル画面を即座に更新して体感速度を保つ
+    let localNext = JSON.parse(JSON.stringify(items));
+    localNext = mutator(localNext) || localNext;
+    localNext = syncPlanQty(localNext);
+    if (normalize) {
+      localNext = normalizeOrder(localNext);
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    items = localNext;
+    render();
+
+    // 2. Firebaseのサーバー最新値に対してトランザクションで原子的に反映
+    if (itemsRef) {
+      itemsRef.transaction((currentData) => {
+        let serverList;
+        if (!currentData) {
+          serverList = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+        } else {
+          const raw = Array.isArray(currentData) ? currentData : Object.values(currentData);
+          serverList = syncPlanQty(raw);
+        }
+        let updated = mutator(serverList) || serverList;
+        updated = syncPlanQty(updated);
+        if (normalize) {
+          updated = normalizeOrder(updated);
+        }
+        return updated;
+      }, (error) => {
+        if (error) {
+          console.error('Firebaseトランザクションエラー:', error);
+          alert('通信エラーにより保存できませんでした。電波状況を確認してください。');
+        }
+      });
+    }
+  }
+
+  // Firebaseの初期化とリアルタイム購読
+  function initFirebase() {
+    const statusEl = document.getElementById('syncStatus');
+
+    if (!isFirebaseConfigured) {
+      statusEl.textContent = '⚠️ Firebase未設定（プレビュー）';
+      render();
+      return;
+    }
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+      itemsRef = db.ref(DB_PATH);
+
+      // 接続状態の監視
+      db.ref('.info/connected').on('value', (snap) => {
+        if (snap.val() === true) {
+          statusEl.textContent = '🟢 リアルタイム同期中';
+        } else {
+          statusEl.textContent = '🟡 再接続中...';
+        }
+      });
+
+      // データのリアルタイム受信
+      itemsRef.on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (!val) {
+          // データベースが空のとき（初回アクセス時）は初期28項目を登録
+          items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+          itemsRef.set(items);
+        } else {
+          const rawList = Array.isArray(val) ? val : Object.values(val);
+          items = normalizeOrder(syncPlanQty(rawList));
+          render();
+        }
+      }, (error) => {
+        console.error('Firebase読み込みエラー:', error);
+        statusEl.textContent = '🔴 接続エラー';
+      });
+    } catch (e) {
+      console.error('Firebase初期化エラー:', e);
+      statusEl.textContent = '🔴 設定エラー';
+      render();
+    }
   }
 
   function escapeHtml(str) {
@@ -940,29 +1114,54 @@
     progressEl.textContent = `${boughtItemCount} / ${activeCount} 品目`;
   }
 
+  // 現在のフィルターと検索キーワードに一致する表示対象リストを取得
+  function getFilteredItems() {
+    const q = searchQuery.trim().toLowerCase();
+    return items.filter(item => {
+      const settled = isSettledSkipped(item);
+      if (currentFilter === 'unbought' && (settled || item.boughtQty !== 0)) return false;
+      if (currentFilter === 'bought' && (settled || item.boughtQty === 0)) return false;
+      if (currentFilter === 'skipped' && !settled) return false;
+      if (q) {
+        const text = `${item.name} ${item.memo || ''}`.toLowerCase();
+        if (!text.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
   function render() {
+    // 他の人の更新でリスト再描画が走った際、自分が入力中のフォーカスとカーソル位置を記憶
+    let focusState = null;
+    const activeEl = document.activeElement;
+    if (activeEl && activeEl.dataset && activeEl.dataset.field) {
+      const parentRow = activeEl.closest('.item-row');
+      if (parentRow) {
+        focusState = {
+          id: parentRow.dataset.id,
+          field: activeEl.dataset.field,
+          start: activeEl.selectionStart,
+          end: activeEl.selectionEnd
+        };
+      }
+    }
+
     items = normalizeOrder(items);
     updateSummary();
 
     const container = document.getElementById('itemList');
     container.innerHTML = '';
 
-    const filtered = items.filter(item => {
-      const settled = isSettledSkipped(item);
-      if (currentFilter === 'unbought') return !settled && item.boughtQty === 0;
-      if (currentFilter === 'bought') return !settled && item.boughtQty > 0;
-      if (currentFilter === 'skipped') return settled;
-      return true;
-    });
+    const filtered = getFilteredItems();
 
     if (filtered.length === 0) {
       container.innerHTML = `<div style="padding: 28px; text-align: center; color: #6b7280;">該当する項目がありません</div>`;
       return;
     }
 
-    const upperCount = items.filter(i => !isSettledSkipped(i)).length;
+    const isUnfilteredAll = currentFilter === 'all' && searchQuery.trim() === '';
 
-    filtered.forEach((item) => {
+    filtered.forEach((item, fIdx) => {
       const globalIndex = items.findIndex(i => i.id === item.id);
       const isPendingMove = pendingSkipTimers.has(item.id);
       const isBought = !item.skipped && item.boughtQty > 0;
@@ -970,18 +1169,19 @@
       const actualSubtotal = item.skipped ? 0 : item.price * item.boughtQty;
       const planSubtotal = hasPlan ? item.price * item.planQty : null;
 
-      // 通常エリア内での移動可否
-      const canMoveUp = !item.skipped && globalIndex > 0;
-      const canMoveDown = !item.skipped && globalIndex < upperCount - 1;
+      // 現在画面に表示されている並び順（filtered）基準で上下移動の可否を判定
+      const canMoveUp = !item.skipped && fIdx > 0 && !filtered[fIdx - 1].skipped;
+      const canMoveDown = !item.skipped && fIdx < filtered.length - 1 && !filtered[fIdx + 1].skipped;
+      const canDrag = !item.skipped && isUnfilteredAll;
 
       const row = document.createElement('div');
       row.className = `item-row${isBought ? ' bought' : ''}${item.skipped ? ' skipped' : ''}${isPendingMove ? ' pending-move' : ''}`;
       row.dataset.id = item.id;
-      row.draggable = !item.skipped && currentFilter === 'all';
+      row.draggable = canDrag;
 
       row.innerHTML = `
         <div class="order-controls">
-          <span class="drag-handle" title="ドラッグして並べ替え">${item.skipped ? '・' : '⠿'}</span>
+          <span class="drag-handle${canDrag ? '' : ' is-disabled'}" title="${canDrag ? 'ドラッグして並べ替え' : '全表示時にドラッグ並べ替え可'}">${item.skipped ? '・' : '⠿'}</span>
           <div class="move-btns">
             <button type="button" class="move-btn" data-action="up" ${canMoveUp ? '' : 'disabled'} title="上へ">▲</button>
             <button type="button" class="move-btn" data-action="down" ${canMoveDown ? '' : 'disabled'} title="下へ">▼</button>
@@ -997,7 +1197,7 @@
 
         <div class="price-col">
           <span class="mobile-label">単価(税込)</span>
-          <input type="number" class="num-input" data-field="price" value="${item.price}" min="0" step="1" />
+          <input type="number" class="num-input" data-field="price" value="${item.price}" min="0" step="1" inputmode="numeric" pattern="[0-9]*" />
         </div>
 
         <div class="plan-col">
@@ -1009,7 +1209,7 @@
           <span class="mobile-label">購入個数</span>
           <div class="qty-stepper">
             <button type="button" class="step-btn" data-action="dec" ${item.skipped ? 'disabled' : ''}>−</button>
-            <input type="number" data-field="boughtQty" value="${item.boughtQty}" min="0" step="1" ${item.skipped ? 'disabled' : ''} />
+            <input type="number" data-field="boughtQty" value="${item.boughtQty}" min="0" step="1" inputmode="numeric" pattern="[0-9]*" ${item.skipped ? 'disabled' : ''} />
             <button type="button" class="step-btn" data-action="inc" ${item.skipped ? 'disabled' : ''}>＋</button>
           </div>
           ${hasPlan
@@ -1037,8 +1237,8 @@
         </div>
       `;
 
-      // ドラッグ＆ドロップイベント（通常項目かつ全表示時）
-      if (!item.skipped && currentFilter === 'all') {
+      // ドラッグ＆ドロップイベント（通常項目かつ全表示・検索なし時）
+      if (canDrag) {
         row.addEventListener('dragstart', (e) => {
           draggedItemId = item.id;
           row.classList.add('dragging');
@@ -1068,80 +1268,98 @@
           row.classList.remove('drag-over');
           if (draggedItemId === null || draggedItemId === item.id) return;
 
-          const fromIdx = items.findIndex(i => i.id === draggedItemId);
-          const toIdx = items.findIndex(i => i.id === item.id);
-          if (fromIdx > -1 && toIdx > -1) {
-            const [moved] = items.splice(fromIdx, 1);
-            items.splice(toIdx, 0, moved);
-            saveItems();
-            render();
-          }
+          const sourceId = draggedItemId;
+          const targetId = item.id;
+          applyChange(list => {
+            const fromIdx = list.findIndex(i => i.id === sourceId);
+            const toIdx = list.findIndex(i => i.id === targetId);
+            if (fromIdx > -1 && toIdx > -1) {
+              const next = [...list];
+              const [moved] = next.splice(fromIdx, 1);
+              next.splice(toIdx, 0, moved);
+              return next;
+            }
+            return list;
+          });
         });
       }
 
       container.appendChild(row);
     });
+
+    // 入力中だった要素へフォーカスを復元
+    if (focusState) {
+      const target = container.querySelector(`.item-row[data-id="${focusState.id}"] [data-field="${focusState.field}"]`);
+      if (target && !target.disabled) {
+        target.focus();
+        try {
+          if (focusState.start !== null && focusState.end !== null) {
+            target.setSelectionRange(focusState.start, focusState.end);
+          }
+        } catch (_) {}
+      }
+    }
   }
 
-  // リスト内のクリック操作
+  // リスト内のクリック操作（すべてトランザクション経由で更新）
   document.getElementById('itemList').addEventListener('click', (e) => {
     const row = e.target.closest('.item-row');
     if (!row) return;
     const id = Number(row.dataset.id);
-    const idx = items.findIndex(i => i.id === id);
-    if (idx === -1) return;
+    const currentItem = items.find(i => i.id === id);
+    if (!currentItem) return;
 
     const actionEl = e.target.closest('[data-action]');
     if (!actionEl) return;
     const action = actionEl.dataset.action;
 
     if (action === 'inc') {
-      items[idx].boughtQty += 1;
-      saveItems();
-      render();
+      applyChange(list => list.map(it => it.id === id ? { ...it, boughtQty: it.boughtQty + 1 } : it));
     } else if (action === 'dec') {
-      items[idx].boughtQty = Math.max(0, items[idx].boughtQty - 1);
-      saveItems();
-      render();
-    } else if (action === 'fillPlan' && items[idx].planQty !== null) {
-      items[idx].boughtQty = items[idx].planQty;
-      saveItems();
-      render();
-    } else if (action === 'up' && idx > 0) {
-      [items[idx - 1], items[idx]] = [items[idx], items[idx - 1]];
-      saveItems();
-      render();
-    } else if (action === 'down' && idx < items.length - 1 && !isSettledSkipped(items[idx + 1])) {
-      [items[idx], items[idx + 1]] = [items[idx + 1], items[idx]];
-      saveItems();
-      render();
+      applyChange(list => list.map(it => it.id === id ? { ...it, boughtQty: Math.max(0, it.boughtQty - 1) } : it));
+    } else if (action === 'fillPlan' && currentItem.planQty !== null) {
+      applyChange(list => list.map(it => (it.id === id && it.planQty !== null) ? { ...it, boughtQty: it.planQty } : it));
+    } else if (action === 'up' || action === 'down') {
+      // 表示中リスト（filtered）上で隣接しているアイテムと入れ替え
+      const filtered = getFilteredItems();
+      const fIdx = filtered.findIndex(i => i.id === id);
+      const neighbor = action === 'up' ? filtered[fIdx - 1] : filtered[fIdx + 1];
+      if (neighbor && !currentItem.skipped && !neighbor.skipped) {
+        const targetId = neighbor.id;
+        applyChange(list => {
+          const a = list.findIndex(i => i.id === id);
+          const b = list.findIndex(i => i.id === targetId);
+          if (a > -1 && b > -1) {
+            const next = [...list];
+            [next[a], next[b]] = [next[b], next[a]];
+            return next;
+          }
+          return list;
+        });
+      }
     } else if (action === 'delete') {
-      if (confirm(`「${items[idx].name}」をリストから削除しますか？`)) {
+      if (confirm(`「${currentItem.name}」を全員のリストから削除しますか？`)) {
         if (pendingSkipTimers.has(id)) {
           clearTimeout(pendingSkipTimers.get(id));
           pendingSkipTimers.delete(id);
         }
-        items.splice(idx, 1);
-        saveItems();
-        render();
+        applyChange(list => list.filter(it => it.id !== id));
       }
     }
   });
 
-  // 入力値・チェックボックス変更
+  // 入力値・チェックボックス変更（トランザクション経由で更新）
   document.getElementById('itemList').addEventListener('change', (e) => {
     const row = e.target.closest('.item-row');
     if (!row) return;
     const id = Number(row.dataset.id);
-    const idx = items.findIndex(i => i.id === id);
-    if (idx === -1) return;
+    if (!items.some(i => i.id === id)) return;
 
     const field = e.target.dataset.field;
     if (!field) return;
 
     if (field === 'skipped') {
       const checked = e.target.checked;
-      items[idx].skipped = checked;
 
       if (pendingSkipTimers.has(id)) {
         clearTimeout(pendingSkipTimers.get(id));
@@ -1151,30 +1369,36 @@
       if (checked) {
         const timerId = setTimeout(() => {
           pendingSkipTimers.delete(id);
-          saveItems(true);
-          render();
+          applyChange(list => list, { normalize: true });
         }, SKIP_MOVE_DELAY_MS);
         pendingSkipTimers.set(id, timerId);
 
-        saveItems(false);
-        render();
+        applyChange(
+          list => list.map(it => it.id === id ? { ...it, skipped: true } : it),
+          { normalize: false }
+        );
       } else {
-        saveItems(true);
-        render();
+        applyChange(
+          list => list.map(it => it.id === id ? { ...it, skipped: false } : it),
+          { normalize: true }
+        );
       }
     } else if (field === 'name') {
       const val = e.target.value.trim();
-      if (val) items[idx].name = val;
-      saveItems();
-      render();
+      if (val) {
+        applyChange(list => list.map(it => it.id === id ? { ...it, name: val } : it));
+      } else {
+        render();
+      }
     } else if (field === 'memo') {
-      items[idx].memo = e.target.value;
-      saveItems(false);
+      const val = e.target.value;
+      applyChange(
+        list => list.map(it => it.id === id ? { ...it, memo: val } : it),
+        { normalize: false }
+      );
     } else if (field === 'price' || field === 'boughtQty') {
       const num = Math.max(0, Math.floor(Number(e.target.value) || 0));
-      items[idx][field] = num;
-      saveItems();
-      render();
+      applyChange(list => list.map(it => it.id === id ? { ...it, [field]: num } : it));
     }
   });
 
@@ -1198,13 +1422,11 @@
       memo: memoInput.value.trim()
     };
 
-    // 通常アイテムの末尾（確定済みの買わないリストの手前）に追加
-    const activeItems = items.filter(i => !isSettledSkipped(i));
-    const skippedItems = items.filter(i => isSettledSkipped(i));
-    items = [...activeItems, newItem, ...skippedItems];
-
-    saveItems();
-    render();
+    applyChange(list => {
+      const upper = list.filter(i => !isSettledSkipped(i));
+      const lower = list.filter(i => isSettledSkipped(i));
+      return [...upper, newItem, ...lower];
+    });
 
     nameInput.value = '';
     priceInput.value = '110';
@@ -1220,6 +1442,24 @@
       currentFilter = btn.dataset.filter;
       render();
     });
+  });
+
+  // キーワード検索
+  const searchInputEl = document.getElementById('searchInput');
+  const searchClearBtn = document.getElementById('searchClearBtn');
+
+  searchInputEl.addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    searchClearBtn.style.display = searchQuery ? 'flex' : 'none';
+    render();
+  });
+
+  searchClearBtn.addEventListener('click', () => {
+    searchInputEl.value = '';
+    searchQuery = '';
+    searchClearBtn.style.display = 'none';
+    render();
+    searchInputEl.focus();
   });
 
   // CSV出力（精算・会計まとめ用）
@@ -1246,7 +1486,7 @@
     URL.revokeObjectURL(url);
   });
 
-  // JSONバックアップ保存
+  // JSONバックアップ保存（顧問モード専用）
   document.getElementById('exportJsonBtn').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1257,7 +1497,7 @@
     URL.revokeObjectURL(url);
   });
 
-  // JSON復元
+  // JSON復元（顧問モード専用・全員の画面へ一括反映）
   document.getElementById('importJsonBtn').addEventListener('click', () => {
     document.getElementById('importFileInput').click();
   });
@@ -1270,11 +1510,11 @@
       try {
         const imported = JSON.parse(ev.target.result);
         if (Array.isArray(imported)) {
-          clearAllPendingTimers();
-          items = syncPlanQty(imported);
-          saveItems(true);
-          render();
-          alert('バックアップデータを復元しました。');
+          if (confirm('バックアップデータを復元すると、全員の画面のデータも上書きされます。よろしいですか？')) {
+            clearAllPendingTimers();
+            applyChange(() => syncPlanQty(imported));
+            alert('バックアップデータを復元し、全員のリストへ反映しました。');
+          }
         } else {
           alert('ファイル形式が正しくありません。');
         }
@@ -1286,18 +1526,16 @@
     reader.readAsText(file);
   });
 
-  // 初期データリセット
+  // 初期データリセット（顧問モード専用・全員の画面へ一括反映）
   document.getElementById('resetBtn').addEventListener('click', () => {
-    if (confirm('すべての入力・並び替えをリセットし、Excel提出時の初期データ（28項目）に戻しますか？')) {
+    if (confirm('すべての入力・並び替えをリセットし、全員の画面をExcel提出時の初期データ（28項目）に戻しますか？')) {
       clearAllPendingTimers();
-      items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
-      saveItems(true);
-      render();
+      applyChange(() => JSON.parse(JSON.stringify(INITIAL_ITEMS)));
     }
   });
 
-  // 初期描画
-  render();
+  // Firebase接続開始
+  initFirebase();
 </script>
 </body>
 </html>
