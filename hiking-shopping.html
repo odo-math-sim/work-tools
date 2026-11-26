@@ -30,19 +30,30 @@
       padding: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.5;
-      padding-bottom: 60px;
+      padding-bottom: 72px;
+    }
+
+    /* キーボード・支援技術向けフォーカス視認性向上 */
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: 2px;
     }
 
     /* ヘッダー・サマリー（上部固定） */
     header {
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: #fff;
-      padding: 14px 16px;
+      padding: 12px 16px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -59,17 +70,24 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 6px;
+      margin-bottom: 8px;
     }
 
-    .header-title {
-      font-size: 1.15rem;
-      font-weight: 700;
+    .header-title-wrap {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
+    }
+
+    .header-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
       cursor: pointer;
       user-select: none;
     }
@@ -78,7 +96,7 @@
       background: rgba(255, 255, 255, 0.2);
       padding: 2px 8px;
       border-radius: 999px;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       font-weight: 600;
     }
 
@@ -88,6 +106,44 @@
       border-radius: 999px;
       font-size: 0.72rem;
       font-weight: 600;
+    }
+
+    /* 計画外追加通知バッジ（タップで該当行へジャンプ） */
+    .extra-alert-badge {
+      display: none;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #f59e0b;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      transition: transform 0.12s ease, background-color 0.15s ease;
+    }
+
+    .extra-alert-badge:hover {
+      background: #fde68a;
+      transform: translateY(-1px);
+    }
+
+    .extra-alert-badge:active {
+      transform: translateY(0);
+    }
+
+    .lock-badge {
+      display: none;
+      background: #f59e0b;
+      color: #1f2937;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    body.locked-mode .lock-badge {
+      display: inline-block;
     }
 
     .admin-badge {
@@ -107,40 +163,84 @@
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 8px;
     }
 
     .summary-card {
       background: rgba(255, 255, 255, 0.12);
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 7px 10px;
       backdrop-filter: blur(4px);
+      border: 1px solid transparent;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .summary-card.over-card {
+      background: rgba(220, 38, 38, 0.88);
+      border-color: #fecaca;
+      box-shadow: 0 0 12px rgba(220, 38, 38, 0.45);
     }
 
     .summary-label {
-      font-size: 0.74rem;
-      opacity: 0.9;
+      font-size: 0.72rem;
+      opacity: 0.92;
       display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .summary-value {
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 700;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
     }
 
     .summary-value.over {
-      color: #fca5a5;
+      color: #fef2f2;
     }
 
     .summary-value.good {
       color: #a7f3d0;
     }
 
+    /* 通知バナー（電波切れ警告・ロック中通知） */
+    .status-banner {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .offline-banner {
+      background: #fee2e2;
+      border: 1px solid #ef4444;
+      color: #991b1b;
+    }
+
+    body.offline-mode .offline-banner {
+      display: flex;
+    }
+
+    .lock-banner {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+    }
+
+    body.locked-mode .lock-banner {
+      display: flex;
+    }
+
     /* メインコンテナ */
     main {
       max-width: 1100px;
-      margin: 16px auto;
+      margin: 14px auto;
       padding: 0 12px;
     }
 
@@ -197,10 +297,10 @@
       border: none;
       background: #e5e7eb;
       color: #4b5563;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -215,9 +315,9 @@
       border: 1px solid var(--border);
       background: #fff;
       color: var(--text);
-      padding: 7px 12px;
+      padding: 7px 11px;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
@@ -226,8 +326,13 @@
       transition: all 0.15s ease;
     }
 
-    .btn:hover {
+    .btn:hover:not(:disabled) {
       background: #f3f4f6;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
     .btn-primary {
@@ -236,7 +341,7 @@
       border-color: var(--primary);
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--primary-dark);
     }
 
@@ -246,17 +351,33 @@
       border-color: var(--primary);
     }
 
+    .btn-warning {
+      background: #fffbeb;
+      color: #b45309;
+      border-color: #fcd34d;
+    }
+
+    .btn-warning:hover:not(:disabled) {
+      background: #fef3c7;
+    }
+
+    .btn-warning.is-locked-btn {
+      background: #f59e0b;
+      color: #1f2937;
+      border-color: #d97706;
+    }
+
     .btn-danger {
       color: var(--danger);
       border-color: #fecaca;
     }
 
-    .btn-danger:hover {
+    .btn-danger:hover:not(:disabled) {
       background: #fef2f2;
     }
 
     .btn-sm {
-      padding: 4px 8px;
+      padding: 5px 9px;
       font-size: 0.78rem;
     }
 
@@ -273,27 +394,70 @@
       display: block !important;
     }
 
-    /* 新規追加フォーム（項目名・単価・メモのみ） */
+    /* 通常モード専用要素（顧問モード時は非表示） */
+    body.admin-mode .student-only {
+      display: none !important;
+    }
+
+    /* 新規追加フォーム（折りたたみ対応・初期購入数＆単価チップ付き） */
     .add-panel {
       background: var(--card);
       border-radius: 10px;
-      padding: 14px;
+      padding: 12px 14px;
       box-shadow: var(--shadow);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       border-left: 4px solid var(--primary);
     }
 
-    .add-panel h2 {
+    body.locked-mode .add-panel,
+    body.offline-mode .add-panel {
+      opacity: 0.7;
+    }
+
+    .add-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .add-panel-header h2 {
       font-size: 0.95rem;
-      margin-bottom: 10px;
       color: var(--primary);
+      margin: 0;
+    }
+
+    .collapse-toggle-btn {
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      color: var(--text-muted);
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .collapse-toggle-btn:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .add-panel-body {
+      margin-top: 10px;
+    }
+
+    .add-panel.is-collapsed .add-panel-body {
+      display: none;
     }
 
     .add-form {
       display: grid;
-      grid-template-columns: 2.5fr 1fr 2.2fr auto;
+      grid-template-columns: 2.3fr 1.15fr 0.8fr 1.8fr auto;
       gap: 8px;
-      align-items: end;
+      align-items: start;
     }
 
     .field label {
@@ -318,6 +482,47 @@
       box-shadow: 0 0 0 2px var(--primary-light);
     }
 
+    .field input:disabled {
+      background: #f3f4f6;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .add-submit-wrap {
+      padding-top: 21px;
+    }
+
+    /* 単価ワンタップ選択チップ */
+    .price-chips {
+      display: flex;
+      gap: 4px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+
+    .price-chip {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .price-chip:hover:not(:disabled) {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .price-chip:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     /* リスト（PCテーブル＆スマホカード統合） */
     .list-container {
       background: var(--card);
@@ -328,7 +533,7 @@
 
     .list-header {
       display: grid;
-      grid-template-columns: 74px 44px 1fr 90px 105px 135px 95px 96px;
+      grid-template-columns: 74px 44px 1fr 90px 105px 144px 95px 96px;
       gap: 8px;
       padding: 10px 12px;
       background: #f1f5f2;
@@ -341,19 +546,20 @@
 
     .item-row {
       display: grid;
-      grid-template-columns: 74px 44px 1fr 90px 105px 135px 95px 96px;
+      grid-template-columns: 74px 44px 1fr 90px 105px 144px 95px 96px;
       gap: 8px;
       padding: 10px 12px;
       border-bottom: 1px solid #e5e7eb;
       align-items: center;
       background: #fff;
-      transition: background-color 0.2s ease, opacity 0.2s ease;
+      transition: background-color 0.25s ease, opacity 0.2s ease, box-shadow 0.25s ease;
+      scroll-margin-top: 120px;
     }
 
     /* 顧問モード時は右端にゴミ箱列を追加 */
     body.admin-mode .list-header,
     body.admin-mode .item-row {
-      grid-template-columns: 74px 44px 1fr 90px 105px 135px 95px 96px 42px;
+      grid-template-columns: 74px 44px 1fr 90px 105px 144px 95px 96px 42px;
     }
 
     .item-row:last-child {
@@ -376,6 +582,26 @@
     /* 購入完了ハイライト */
     .item-row.bought:not(.skipped) {
       background: #f4fbf6;
+    }
+
+    /* 新規追加・ジャンプ時のハイライト演出 */
+    @keyframes pulseHighlight {
+      0% {
+        background-color: #fef08a;
+        box-shadow: inset 0 0 0 2px #f59e0b;
+      }
+      70% {
+        background-color: #fef9c3;
+        box-shadow: inset 0 0 0 2px #fbbf24;
+      }
+      100% {
+        background-color: #fff;
+        box-shadow: none;
+      }
+    }
+
+    .item-row.flash-highlight {
+      animation: pulseHighlight 2.6s ease-out;
     }
 
     /* 買わないフラグ時（グレーアウト＆最終行へ） */
@@ -438,8 +664,8 @@
       border: 1px solid #d1d5db;
       background: #fff;
       color: #4b5563;
-      width: 22px;
-      height: 18px;
+      width: 24px;
+      height: 19px;
       font-size: 0.65rem;
       line-height: 1;
       border-radius: 3px;
@@ -466,11 +692,11 @@
       text-align: center;
     }
 
-    /* 項目名・メモ */
+    /* 項目名・メモ（空メモは控えめにして入力済みメモを際立たせる） */
     .name-col {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       min-width: 0;
     }
 
@@ -485,8 +711,8 @@
       color: var(--text);
     }
 
-    .item-name-input:hover,
-    .item-name-input:focus {
+    .item-name-input:hover:not(:disabled),
+    .item-name-input:focus:not(:disabled) {
       border-color: var(--border);
       background: #fff;
       outline: none;
@@ -495,18 +721,36 @@
     .memo-input {
       width: 100%;
       font-size: 0.78rem;
-      border: 1px solid transparent;
-      background: #f9fafb;
+      border: 1px dashed transparent;
+      background: transparent;
       padding: 2px 6px;
       border-radius: 4px;
       color: var(--text-muted);
+      transition: background-color 0.15s ease, border-color 0.15s ease;
     }
 
-    .memo-input:focus {
+    .memo-input::placeholder {
+      color: #cbd5e1;
+    }
+
+    .memo-input.has-memo {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      font-weight: 600;
+    }
+
+    .memo-input:hover:not(:disabled) {
       border-color: var(--border);
+      background: #f9fafb;
+    }
+
+    .memo-input:focus:not(:disabled) {
+      border: 1px solid var(--primary);
       background: #fff;
       outline: none;
       color: var(--text);
+      font-weight: 400;
     }
 
     /* 数値入力 */
@@ -518,6 +762,12 @@
       text-align: right;
       font-size: 0.9rem;
       font-variant-numeric: tabular-nums;
+    }
+
+    .num-input:disabled,
+    .qty-stepper input:disabled {
+      background: #f3f4f6;
+      color: #6b7280;
     }
 
     /* 計画個数（固定表示） */
@@ -540,24 +790,28 @@
       color: #9ca3af;
     }
 
-    /* 購入個数ステッパー */
+    /* 購入個数ステッパー＆過不足バッジ */
     .qty-stepper {
       display: flex;
       align-items: center;
-      gap: 3px;
+      justify-content: center;
+      gap: 4px;
     }
 
     .step-btn {
-      width: 28px;
-      height: 30px;
+      width: 30px;
+      height: 32px;
       border: 1px solid var(--border);
       background: #f9fafb;
-      border-radius: 5px;
-      font-size: 1rem;
+      border-radius: 6px;
+      font-size: 1.05rem;
       font-weight: 700;
       cursor: pointer;
       flex-shrink: 0;
       color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .step-btn:hover:not(:disabled) {
@@ -571,25 +825,33 @@
     }
 
     .qty-stepper input {
-      width: 46px;
+      width: 48px;
       text-align: center;
       padding: 5px 2px;
       border: 1px solid var(--border);
-      border-radius: 5px;
+      border-radius: 6px;
       font-size: 0.95rem;
       font-weight: 700;
     }
 
+    .qty-sub-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
     .fill-plan-btn {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       padding: 2px 5px;
       border: 1px solid #cbd5e1;
       background: #f8fafc;
       border-radius: 4px;
       cursor: pointer;
       color: #475569;
-      margin-top: 2px;
-      width: 100%;
+      flex: 1;
+      white-space: nowrap;
     }
 
     .fill-plan-btn:hover:not(:disabled) {
@@ -602,11 +864,43 @@
       cursor: not-allowed;
     }
 
+    /* 過不足バッジ */
+    .diff-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .diff-badge.shortage {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+
+    .diff-badge.matched {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .diff-badge.surplus {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
     .extra-tag {
       font-size: 0.7rem;
-      color: #9ca3af;
+      font-weight: 700;
+      color: #b45309;
+      background: #fef3c7;
+      border-radius: 4px;
+      padding: 1px 6px;
       text-align: center;
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     /* 金額表示 */
@@ -639,10 +933,14 @@
     }
 
     .skip-checkbox {
-      width: 18px;
-      height: 18px;
+      width: 19px;
+      height: 19px;
       accent-color: #6b7280;
       cursor: pointer;
+    }
+
+    .skip-checkbox:disabled {
+      cursor: not-allowed;
     }
 
     .pending-note {
@@ -662,9 +960,14 @@
       border-radius: 4px;
     }
 
-    .del-btn:hover {
+    .del-btn:hover:not(:disabled) {
       color: var(--danger);
       background: #fef2f2;
+    }
+
+    .del-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
     }
 
     .mobile-label {
@@ -674,8 +977,88 @@
       margin-bottom: 2px;
     }
 
-    /* レスポンシブ（スマホ最適化・iPhoneズーム防止） */
+    /* 先頭へ戻るフローティングボタン */
+    .scroll-top-btn {
+      position: fixed;
+      right: 16px;
+      bottom: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: var(--primary);
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+      cursor: pointer;
+      z-index: 95;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .scroll-top-btn.is-visible {
+      display: flex;
+    }
+
+    .scroll-top-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* レスポンシブ（スマホ最適化・UDタップ領域拡大＆iPhoneズーム防止） */
     @media (max-width: 860px) {
+      header {
+        padding: 9px 10px;
+      }
+
+      .header-top {
+        margin-bottom: 6px;
+        gap: 4px;
+      }
+
+      .header-title {
+        font-size: 0.96rem;
+        gap: 5px;
+      }
+
+      .badge,
+      .sync-badge,
+      .lock-badge,
+      .admin-badge {
+        font-size: 0.66rem;
+        padding: 1px 6px;
+      }
+
+      .extra-alert-badge {
+        font-size: 0.68rem;
+        padding: 2px 8px;
+      }
+
+      .header-budget-note {
+        font-size: 0.72rem !important;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+      }
+
+      .summary-card {
+        padding: 5px 6px;
+        border-radius: 6px;
+      }
+
+      .summary-label {
+        font-size: 0.62rem;
+      }
+
+      .summary-value {
+        font-size: 0.9rem;
+      }
+
       /* iOS Safariの入力時自動拡大ズームを防ぐため16pxに設定 */
       .field input,
       .search-box input,
@@ -692,21 +1075,24 @@
         flex: 1 1 100%;
       }
 
-      .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
+      .add-form {
+        grid-template-columns: 1fr 1fr;
       }
 
-      .summary-grid .summary-card:first-child {
+      .field-name,
+      .field-memo,
+      .add-submit-wrap {
         grid-column: 1 / -1;
       }
 
-      .add-form {
-        grid-template-columns: 1fr;
+      .add-submit-wrap {
+        padding-top: 2px;
       }
 
-      .add-form button {
+      .add-form button[type="submit"] {
+        width: 100%;
         justify-content: center;
-        padding: 10px;
+        padding: 11px;
       }
 
       .list-header {
@@ -726,10 +1112,21 @@
         order: 1;
       }
 
+      .move-btns {
+        flex-direction: row;
+        gap: 4px;
+      }
+
+      .move-btn {
+        width: 30px;
+        height: 28px;
+        font-size: 0.75rem;
+      }
+
       .row-no {
         order: 2;
         background: #f3f4f6;
-        padding: 2px 8px;
+        padding: 3px 9px;
         border-radius: 4px;
       }
 
@@ -740,9 +1137,9 @@
 
       .skip-label {
         flex-direction: row;
-        gap: 5px;
+        gap: 6px;
         background: #f3f4f6;
-        padding: 4px 8px;
+        padding: 6px 10px;
         border-radius: 6px;
       }
 
@@ -764,13 +1161,149 @@
         min-width: 72px;
       }
 
+      /* スマホでは個数増減ボタンをタップしやすい36x38pxへ拡大 */
       .qty-col {
-        flex: 1 1 34%;
-        min-width: 132px;
+        flex: 1 1 44%;
+        min-width: 156px;
+      }
+
+      .qty-stepper {
+        gap: 6px;
+      }
+
+      .step-btn {
+        width: 36px;
+        height: 38px;
+        font-size: 1.2rem;
+      }
+
+      .qty-stepper input {
+        width: 52px;
+        height: 38px;
+      }
+
+      .fill-plan-btn {
+        padding: 4px 6px;
+        font-size: 0.72rem;
       }
 
       .mobile-label {
         display: block;
+      }
+    }
+
+    /* 印刷・PDF出力専用レイアウト（A4会計報告向け） */
+    @media print {
+      body {
+        background: #fff;
+        color: #000;
+        padding-bottom: 0;
+        font-size: 10pt;
+      }
+
+      header {
+        position: static;
+        background: #fff !important;
+        color: #000 !important;
+        box-shadow: none;
+        border-bottom: 2px solid #000;
+        padding: 6px 0 10px 0;
+      }
+
+      .badge {
+        background: #eee !important;
+        color: #000 !important;
+        border: 1px solid #999;
+      }
+
+      .sync-badge,
+      .extra-alert-badge,
+      .lock-badge,
+      .admin-badge,
+      .status-banner,
+      .add-panel,
+      .toolbar,
+      .order-controls,
+      .del-col,
+      .fill-plan-btn,
+      .step-btn,
+      .scroll-top-btn,
+      .mobile-label {
+        display: none !important;
+      }
+
+      .summary-grid {
+        gap: 8px;
+      }
+
+      .summary-card,
+      .summary-card.over-card {
+        background: #f9fafb !important;
+        color: #000 !important;
+        border: 1px solid #666 !important;
+        box-shadow: none !important;
+        padding: 6px 8px;
+      }
+
+      .summary-value,
+      .summary-value.over,
+      .summary-value.good {
+        color: #000 !important;
+      }
+
+      main {
+        margin: 8px 0;
+        padding: 0;
+        max-width: none;
+      }
+
+      .list-container {
+        box-shadow: none;
+        border: 1px solid #666;
+        border-radius: 0;
+      }
+
+      .list-header {
+        display: grid !important;
+        grid-template-columns: 36px 1fr 72px 72px 86px 82px 64px !important;
+        background: #eee !important;
+        color: #000 !important;
+        border-bottom: 1px solid #666;
+        padding: 6px 8px;
+      }
+
+      .list-header > div:first-child {
+        display: none !important;
+      }
+
+      .item-row,
+      body.admin-mode .item-row {
+        display: grid !important;
+        grid-template-columns: 36px 1fr 72px 72px 86px 82px 64px !important;
+        padding: 5px 8px;
+        border-bottom: 1px solid #ccc;
+        page-break-inside: avoid;
+        background: #fff !important;
+      }
+
+      .item-name-input,
+      .memo-input,
+      .num-input,
+      .qty-stepper input,
+      .plan-qty-fixed {
+        border: none !important;
+        background: transparent !important;
+        color: #000 !important;
+        padding: 0 !important;
+        font-size: 9.5pt !important;
+      }
+
+      .memo-input:not(.has-memo) {
+        display: none !important;
+      }
+
+      .qty-sub-row {
+        justify-content: center;
       }
     }
   </style>
@@ -780,28 +1313,32 @@
 <header>
   <div class="header-inner">
     <div class="header-top">
-      <div class="header-title" id="secretAdminTrigger">
-        <span>🏔️ 山吹祭 買い出し・在庫管理</span>
-        <span class="badge">ハイキングに行ってきた！</span>
-        <span class="sync-badge" id="syncStatus">🟡 接続準備中...</span>
-        <span class="admin-badge">顧問モード</span>
+      <div class="header-title-wrap">
+        <div class="header-title" id="secretAdminTrigger">
+          <span>🏔️ 山吹祭 買い出し・在庫管理</span>
+          <span class="badge">ハイキングに行ってきた！</span>
+          <span class="sync-badge" id="syncStatus">🟡 接続準備中...</span>
+          <span class="lock-badge">🔒 ロック中</span>
+          <span class="admin-badge">顧問モード</span>
+        </div>
+        <button type="button" class="extra-alert-badge" id="extraAlertBadge" title="タップすると計画外アイテムの位置へ移動します">＋計画外 0件追加あり</button>
       </div>
-      <div style="font-size: 0.8rem; opacity: 0.92; font-weight: 600;">
-        補助金予算上限: 16,000円
+      <div class="header-budget-note" style="font-size: 0.78rem; opacity: 0.92; font-weight: 600;">
+        予算上限: 16,000円
       </div>
     </div>
 
     <div class="summary-grid">
-      <div class="summary-card">
-        <span class="summary-label">購入実績 合計（税込）</span>
+      <div class="summary-card" id="actualCard">
+        <span class="summary-label">購入実績 合計</span>
         <span class="summary-value" id="actualTotalDisplay">0円</span>
       </div>
-      <div class="summary-card">
-        <span class="summary-label">上限(16,000円)までの残枠</span>
+      <div class="summary-card" id="remainCard">
+        <span class="summary-label" id="remainLabel">上限までの残枠</span>
         <span class="summary-value" id="remainLimitDisplay">16,000円</span>
       </div>
       <div class="summary-card">
-        <span class="summary-label">買い出し進捗（買わない除外）</span>
+        <span class="summary-label">買い出し進捗</span>
         <span class="summary-value" id="progressDisplay">0 / 28 品目</span>
       </div>
     </div>
@@ -809,42 +1346,73 @@
 </header>
 
 <main>
-  <!-- 新規アイテム追加（追加後にリスト側で購入数を入力） -->
-  <section class="add-panel">
-    <h2>＋ 新しい商品をリストに追加（計画外）</h2>
-    <form class="add-form" id="addForm">
-      <div class="field field-name">
-        <label for="newName">項目名（必須）</label>
-        <input type="text" id="newName" placeholder="例：画用紙（A4）、結束バンド など" required />
-      </div>
-      <div class="field">
-        <label for="newPrice">単価（税込・円）</label>
-        <input type="number" id="newPrice" value="110" min="0" step="1" inputmode="numeric" pattern="[0-9]*" required />
-      </div>
-      <div class="field field-memo">
-        <label for="newMemo">メモ・用途（任意）</label>
-        <input type="text" id="newMemo" placeholder="例：ダイソーで購入" />
-      </div>
-      <button type="submit" class="btn btn-primary">リストに追加</button>
-    </form>
+  <!-- 電波切れ（オフライン）警告バナー -->
+  <div class="status-banner offline-banner" id="offlineBanner">
+    <span>⚠️ 電波が切れています。データの消失を防ぐため、通信が回復するまで入力を一時停止しています。</span>
+  </div>
+
+  <!-- 編集ロック中の通知バナー -->
+  <div class="status-banner lock-banner" id="lockBanner">
+    <span>🔒 現在、顧問により入力がロック（確定）されています。閲覧・検索・CSV出力のみ可能です。</span>
+  </div>
+
+  <!-- 新規アイテム追加（折りたたみ対応・初期購入数1＆単価チップ付き） -->
+  <section class="add-panel" id="addPanel">
+    <div class="add-panel-header" id="addPanelToggle">
+      <h2>＋ 新しい商品をリストに追加（計画外）</h2>
+      <button type="button" class="collapse-toggle-btn" id="collapseToggleBtn" aria-expanded="true" aria-label="新規追加フォームを折りたたむ">▲ 折りたたむ</button>
+    </div>
+    <div class="add-panel-body">
+      <form class="add-form" id="addForm">
+        <div class="field field-name">
+          <label for="newName">項目名（必須）</label>
+          <input type="text" id="newName" placeholder="例：画用紙（A4）、結束バンド など" required />
+        </div>
+        <div class="field">
+          <label for="newPrice">単価（税込・円）</label>
+          <input type="number" id="newPrice" value="110" min="0" step="1" inputmode="numeric" pattern="[0-9]*" data-autoselect="true" required />
+          <div class="price-chips" id="priceChips">
+            <button type="button" class="price-chip" data-price="110">110円</button>
+            <button type="button" class="price-chip" data-price="220">220円</button>
+            <button type="button" class="price-chip" data-price="330">330円</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="newBoughtQty">購入個数</label>
+          <input type="number" id="newBoughtQty" value="1" min="0" step="1" inputmode="numeric" pattern="[0-9]*" data-autoselect="true" required />
+        </div>
+        <div class="field field-memo">
+          <label for="newMemo">メモ・用途（任意）</label>
+          <input type="text" id="newMemo" placeholder="例：ダイソーで購入" />
+        </div>
+        <div class="add-submit-wrap">
+          <button type="submit" class="btn btn-primary" id="addSubmitBtn">リストに追加</button>
+        </div>
+      </form>
+    </div>
   </section>
 
   <!-- フィルター・検索・データ操作ツールバー -->
   <div class="toolbar">
     <div class="filter-group">
-      <button type="button" class="btn btn-active" data-filter="all">すべて表示</button>
-      <button type="button" class="btn" data-filter="unbought">未購入のみ</button>
-      <button type="button" class="btn" data-filter="bought">購入済のみ</button>
-      <button type="button" class="btn" data-filter="skipped">買わないリスト</button>
+      <button type="button" class="btn btn-active" data-filter="all">すべて表示 (28)</button>
+      <button type="button" class="btn" data-filter="unbought">未購入のみ (28)</button>
+      <button type="button" class="btn" data-filter="bought">購入済のみ (0)</button>
+      <button type="button" class="btn" data-filter="changed">変更・追加のみ (0)</button>
+      <button type="button" class="btn" data-filter="extra">計画外のみ (0)</button>
+      <button type="button" class="btn" data-filter="skipped">買わないリスト (0)</button>
     </div>
 
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="🔍 商品名・メモで検索..." />
-      <button type="button" class="search-clear" id="searchClearBtn" title="検索をクリア" style="display:none;">✕</button>
+      <input type="text" id="searchInput" placeholder="🔍 商品名・メモで検索..." aria-label="商品名またはメモで検索" />
+      <button type="button" class="search-clear" id="searchClearBtn" title="検索をクリア" aria-label="検索キーワードをクリア" style="display:none;">✕</button>
     </div>
 
     <div class="filter-group">
+      <a href="manual_student.html" target="_blank" rel="noopener noreferrer" class="btn btn-sm student-only" style="text-decoration:none;">📖 使い方（生徒用）</a>
+      <a href="manual_teacher.html" target="_blank" rel="noopener noreferrer" class="btn btn-sm admin-only" style="text-decoration:none;">📘 使い方（教員用）</a>
       <button type="button" class="btn btn-sm" id="exportCsvBtn">📊 CSV出力</button>
+      <button type="button" class="btn btn-sm btn-warning admin-only" id="toggleLockBtn">🔒 編集ロックする</button>
       <button type="button" class="btn btn-sm admin-only" id="exportJsonBtn">💾 バックアップ保存</button>
       <button type="button" class="btn btn-sm admin-only" id="importJsonBtn">📂 復元</button>
       <input type="file" id="importFileInput" accept=".json" style="display:none" />
@@ -869,6 +1437,9 @@
   </div>
 </main>
 
+<!-- 先頭へ戻るフローティングボタン -->
+<button type="button" class="scroll-top-btn" id="scrollTopBtn" title="一番上へ戻る" aria-label="ページの先頭へ戻る">↑</button>
+
 <script>
   // Firebase設定
   const firebaseConfig = {
@@ -882,12 +1453,13 @@
   };
 
   const DB_PATH = 'yamabukisai_hiking_2026/items';
+  const LOCK_PATH = 'yamabukisai_hiking_2026/locked';
   const BUDGET_LIMIT = 16000;      // 確定した補助金予算上限
   const SKIP_MOVE_DELAY_MS = 2000; // 「買わない」チェック後、下段へ移動するまでの待機時間（2秒）
 
-  // Excel『③支出計画書「ハイキングに行ってきた！」（10月21日〆）.xlsx』の固定初期データ
+  // Excel『③支出計画書「ハイキングに行ってきた！」（10月21日〆）.xlsx』の固定初期データ（メモはすべて空欄）
   const INITIAL_ITEMS = [
-    { id: 1,  name: 'コルクボード', price: 220, planQty: 8, boughtQty: 0, skipped: false, memo: '掲示メイン用' },
+    { id: 1,  name: 'コルクボード', price: 220, planQty: 8, boughtQty: 0, skipped: false, memo: '' },
     { id: 2,  name: '木製イーゼル', price: 110, planQty: 10, boughtQty: 0, skipped: false, memo: '' },
     { id: 3,  name: '木製プッシュピン', price: 110, planQty: 5, boughtQty: 0, skipped: false, memo: '' },
     { id: 4,  name: '色厚紙（クラフト色）', price: 110, planQty: 6, boughtQty: 0, skipped: false, memo: '' },
@@ -898,12 +1470,12 @@
     { id: 9,  name: '木製クロスピンチ（クリップ）', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
     { id: 10, name: 'テーブルクロス(緑/茶など)', price: 110, planQty: 6, boughtQty: 0, skipped: false, memo: '' },
     { id: 11, name: '装飾用飾り(ガーランド等)', price: 110, planQty: 10, boughtQty: 0, skipped: false, memo: '' },
-    { id: 12, name: '木製プレート', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '山名表示用' },
+    { id: 12, name: '木製プレート', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
     { id: 13, name: 'ミニ黒板（または黒板タグ）', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
     { id: 14, name: '荷札（クラフトタグ）', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
     { id: 15, name: 'ペン・マジック類', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
     { id: 16, name: 'ペイントマーカー（白など）', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
-    { id: 17, name: '丸シール（赤・黄・緑など）', price: 110, planQty: 3, boughtQty: 0, skipped: false, memo: '投票企画用' },
+    { id: 17, name: '丸シール（赤・黄・緑など）', price: 110, planQty: 3, boughtQty: 0, skipped: false, memo: '' },
     { id: 18, name: 'リメイクシート（木目調等）', price: 110, planQty: 5, boughtQty: 0, skipped: false, memo: '' },
     { id: 19, name: 'ミニチュアオブジェ等', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
     { id: 20, name: 'Ｓ字フック（大小）', price: 110, planQty: 4, boughtQty: 0, skipped: false, memo: '' },
@@ -917,20 +1489,76 @@
     { id: 28, name: 'スタッフ用ネームプレート（紐付き）', price: 110, planQty: 10, boughtQty: 0, skipped: false, memo: '' }
   ];
 
-  // Excel初期28項目の計画個数マップ（常にこの値で固定）
+  // Excel初期28項目の計画個数・初期単価・初期項目名マップ
   const FIXED_PLAN_QTY_MAP = new Map(INITIAL_ITEMS.map(item => [item.id, item.planQty]));
+  const INITIAL_PRICE_MAP = new Map(INITIAL_ITEMS.map(item => [item.id, item.price]));
+  const INITIAL_NAME_MAP = new Map(INITIAL_ITEMS.map(item => [item.id, item.name]));
 
   // 状態管理変数
   const pendingSkipTimers = new Map();
+  let highlightedIds = new Set();
+  let highlightClearTimer = null;
   let currentFilter = 'all';
   let searchQuery = '';
   let draggedItemId = null;
   let items = JSON.parse(JSON.stringify(INITIAL_ITEMS));
+  let isLocked = false;
+  let isOffline = false;
+  let hasConnectedOnce = false;
   let itemsRef = null;
+  let lockRef = null;
   const isFirebaseConfigured = Boolean(
     firebaseConfig.databaseURL &&
     !firebaseConfig.databaseURL.includes('ここに')
   );
+
+  // 編集不可状態（顧問ロック中 または 電波切断中）
+  function isEditingBlocked() {
+    return isLocked || isOffline;
+  }
+
+  // 新規商品追加時の重複しない安全な整数IDを生成
+  function generateUniqueId() {
+    return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+  }
+
+  // 指定したID群の行を数秒間ハイライトし、先頭対象行へスムーズスクロール
+  function highlightAndScrollTo(ids, { scroll = true } = {}) {
+    if (!ids || ids.length === 0) return;
+    highlightedIds = new Set(ids.map(Number));
+    clearTimeout(highlightClearTimer);
+    render();
+
+    if (scroll) {
+      requestAnimationFrame(() => {
+        const firstRow = document.querySelector(`.item-row[data-id="${ids[0]}"]`);
+        if (firstRow) {
+          firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+
+    highlightClearTimer = setTimeout(() => {
+      highlightedIds.clear();
+      document.querySelectorAll('.item-row.flash-highlight').forEach(el => {
+        el.classList.remove('flash-highlight');
+      });
+    }, 2800);
+  }
+
+  // JSONバックアップファイルのダウンロード共通関数
+  function downloadBackupJson(prefix = 'yamabukisai_inventory_backup') {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${prefix}_${stamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   // 顧問モードの初期化：URLに ?admin=1 があれば最初からON
   if (new URLSearchParams(window.location.search).get('admin') === '1') {
@@ -952,6 +1580,130 @@
       document.body.classList.toggle('admin-mode');
     }
   });
+
+  // 新規追加パネルの折りたたみ開閉
+  const addPanelEl = document.getElementById('addPanel');
+  const collapseToggleBtn = document.getElementById('collapseToggleBtn');
+  document.getElementById('addPanelToggle').addEventListener('click', () => {
+    const collapsed = addPanelEl.classList.toggle('is-collapsed');
+    collapseToggleBtn.textContent = collapsed ? '▼ 開く' : '▲ 折りたたむ';
+    collapseToggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    collapseToggleBtn.setAttribute('aria-label', collapsed ? '新規追加フォームを開く' : '新規追加フォームを折りたたむ');
+  });
+
+  // 単価ワンタップ選択チップ
+  document.getElementById('priceChips').addEventListener('click', (e) => {
+    if (isEditingBlocked()) return;
+    const chip = e.target.closest('[data-price]');
+    if (!chip) return;
+    const priceInput = document.getElementById('newPrice');
+    priceInput.value = chip.dataset.price;
+  });
+
+  // 数値入力欄をタップした瞬間に数字を全選択（上書き入力しやすくする）
+  document.addEventListener('focusin', (e) => {
+    const el = e.target;
+    if (el && el.tagName === 'INPUT' && (el.type === 'number' || el.dataset.autoselect === 'true')) {
+      setTimeout(() => {
+        try {
+          el.select();
+        } catch (_) {}
+      }, 0);
+    }
+  });
+
+  // 入力途中のフィールドを即座に確定保存（スマホで枠外タップ前にアプリ切り替え・画面消灯した際の確定漏れ防止）
+  function flushActiveFieldInput() {
+    if (isEditingBlocked()) return;
+    const activeEl = document.activeElement;
+    if (!activeEl || !activeEl.dataset || !activeEl.dataset.field) return;
+
+    const row = activeEl.closest('.item-row');
+    if (!row) return;
+    const id = Number(row.dataset.id);
+    const currentItem = items.find(i => i.id === id);
+    if (!currentItem) return;
+
+    const field = activeEl.dataset.field;
+    if (field === 'name') {
+      const val = activeEl.value.trim();
+      if (val && val !== currentItem.name) {
+        applyChange(list => list.map(it => it.id === id ? { ...it, name: val } : it));
+      }
+    } else if (field === 'memo') {
+      const val = activeEl.value;
+      if (val !== currentItem.memo) {
+        applyChange(
+          list => list.map(it => it.id === id ? { ...it, memo: val } : it),
+          { normalize: false }
+        );
+      }
+    } else if (field === 'price' || field === 'boughtQty') {
+      const num = Math.max(0, Math.floor(Number(activeEl.value) || 0));
+      if (num !== currentItem[field]) {
+        applyChange(list => list.map(it => it.id === id ? { ...it, [field]: num } : it));
+      }
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      flushActiveFieldInput();
+    }
+  });
+  window.addEventListener('pagehide', flushActiveFieldInput);
+
+  // 先頭へ戻るボタンの表示制御とクリック動作
+  const scrollTopBtn = document.getElementById('scrollTopBtn');
+  window.addEventListener('scroll', () => {
+    scrollTopBtn.classList.toggle('is-visible', window.scrollY > 240);
+  }, { passive: true });
+
+  scrollTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ヘッダー「＋計画外 〇件追加あり」バッジクリックで該当行へジャンプ
+  document.getElementById('extraAlertBadge').addEventListener('click', () => {
+    const extraItems = items.filter(it => it.planQty === null || it.planQty === undefined);
+    if (extraItems.length === 0) return;
+
+    // フィルターや検索で隠れている場合は「すべて表示」に戻す
+    if (currentFilter !== 'all' || searchQuery.trim() !== '') {
+      currentFilter = 'all';
+      searchQuery = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchClearBtn').style.display = 'none';
+      document.querySelectorAll('[data-filter]').forEach(b => {
+        b.classList.toggle('btn-active', b.dataset.filter === 'all');
+      });
+    }
+
+    highlightAndScrollTo(extraItems.map(it => it.id), { scroll: true });
+  });
+
+  // ロック・オフライン状態のUI反映
+  function applyControlStateUi() {
+    const blocked = isEditingBlocked();
+    document.body.classList.toggle('locked-mode', isLocked);
+    document.body.classList.toggle('offline-mode', isOffline);
+
+    const lockBtn = document.getElementById('toggleLockBtn');
+    if (lockBtn) {
+      lockBtn.textContent = isLocked ? '🔓 ロックを解除する' : '🔒 編集ロックする';
+      lockBtn.classList.toggle('is-locked-btn', isLocked);
+      lockBtn.disabled = isOffline;
+    }
+
+    ['newName', 'newPrice', 'newBoughtQty', 'newMemo', 'addSubmitBtn', 'importJsonBtn', 'resetBtn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = blocked;
+    });
+
+    document.querySelectorAll('.price-chip').forEach(chip => {
+      chip.disabled = blocked;
+    });
+  }
 
   function syncPlanQty(list) {
     return list.map(item => {
@@ -988,7 +1740,14 @@
   }
 
   // トランザクションによる安全なリアルタイム更新（複数人同時タップ時の上書き防止）
-  function applyChange(mutator, { normalize = true } = {}) {
+  function applyChange(mutator, { normalize = true, bypassLock = false } = {}) {
+    if (isOffline) {
+      return;
+    }
+    if (isLocked && !bypassLock) {
+      return;
+    }
+
     // 1. ローカル画面を即座に更新して体感速度を保つ
     let localNext = JSON.parse(JSON.stringify(items));
     localNext = mutator(localNext) || localNext;
@@ -1030,6 +1789,7 @@
 
     if (!isFirebaseConfigured) {
       statusEl.textContent = '⚠️ Firebase未設定（プレビュー）';
+      applyControlStateUi();
       render();
       return;
     }
@@ -1038,14 +1798,43 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
       itemsRef = db.ref(DB_PATH);
+      lockRef = db.ref(LOCK_PATH);
+
+      // 起動後5秒経っても未接続の場合はオフライン警告を表示
+      const initialConnectTimer = setTimeout(() => {
+        if (!hasConnectedOnce) {
+          isOffline = true;
+          statusEl.textContent = '🔴 オフライン（未接続）';
+          applyControlStateUi();
+          render();
+        }
+      }, 5000);
 
       // 接続状態の監視
       db.ref('.info/connected').on('value', (snap) => {
         if (snap.val() === true) {
+          clearTimeout(initialConnectTimer);
+          hasConnectedOnce = true;
+          isOffline = false;
           statusEl.textContent = '🟢 リアルタイム同期中';
-        } else {
-          statusEl.textContent = '🟡 再接続中...';
+          applyControlStateUi();
+          render();
+        } else if (hasConnectedOnce) {
+          isOffline = true;
+          statusEl.textContent = '🟡 再接続中（入力停止）';
+          applyControlStateUi();
+          render();
         }
+      });
+
+      // ロック状態のリアルタイム受信
+      lockRef.on('value', (snapshot) => {
+        isLocked = Boolean(snapshot.val());
+        if (isLocked) {
+          clearAllPendingTimers();
+        }
+        applyControlStateUi();
+        render();
       });
 
       // データのリアルタイム受信
@@ -1067,6 +1856,7 @@
     } catch (e) {
       console.error('Firebase初期化エラー:', e);
       statusEl.textContent = '🔴 設定エラー';
+      applyControlStateUi();
       render();
     }
   }
@@ -1084,34 +1874,106 @@
     return num.toLocaleString('ja-JP') + '円';
   }
 
-  function updateSummary() {
+  // 計画外（新規追加）項目かの判定
+  function isExtraItem(item) {
+    return item.planQty === null || item.planQty === undefined;
+  }
+
+  // 顧問確認用：計画から変更された項目または新規追加された項目かの判定
+  function isChangedOrAddedItem(item) {
+    if (isExtraItem(item)) return true;                                     // 計画外の新規追加
+    if (item.skipped) return true;                                          // 買わない除外
+    if (item.boughtQty > 0 && item.boughtQty !== item.planQty) return true; // 購入したうえで計画個数と異なる
+    const initPrice = INITIAL_PRICE_MAP.get(item.id);
+    if (initPrice !== undefined && item.price !== initPrice) return true;    // 単価変更
+    const initName = INITIAL_NAME_MAP.get(item.id);
+    if (initName !== undefined && item.name !== initName) return true;      // 項目名変更
+    return false;
+  }
+
+  function updateSummaryAndCounts() {
     let actualTotal = 0;
     let activeCount = 0;
     let boughtItemCount = 0;
+    let unboughtCount = 0;
+    let changedCount = 0;
+    let extraCount = 0;
+    let skippedCount = 0;
 
     items.forEach(item => {
+      const settled = isSettledSkipped(item);
+      if (settled) {
+        skippedCount++;
+      } else {
+        if (item.boughtQty === 0) unboughtCount++;
+        else boughtItemCount++;
+      }
+
       if (!item.skipped) {
         activeCount++;
         actualTotal += item.price * item.boughtQty;
-        if (item.boughtQty > 0) {
-          boughtItemCount++;
-        }
       }
+
+      if (isChangedOrAddedItem(item)) changedCount++;
+      if (isExtraItem(item)) extraCount++;
     });
 
     const remainLimit = BUDGET_LIMIT - actualTotal;
+    const isOver = remainLimit < 0;
 
+    const actualCardEl = document.getElementById('actualCard');
+    const remainCardEl = document.getElementById('remainCard');
+    const remainLabelEl = document.getElementById('remainLabel');
     const actualEl = document.getElementById('actualTotalDisplay');
     const remainLimitEl = document.getElementById('remainLimitDisplay');
     const progressEl = document.getElementById('progressDisplay');
 
     actualEl.textContent = formatYen(actualTotal);
-    actualEl.className = 'summary-value' + (actualTotal > BUDGET_LIMIT ? ' over' : '');
+    actualEl.className = 'summary-value' + (isOver ? ' over' : '');
+    actualCardEl.classList.toggle('over-card', isOver);
 
+    remainLabelEl.textContent = isOver
+      ? '⚠️ 上限超過！'
+      : '上限までの残枠';
     remainLimitEl.textContent = formatYen(remainLimit);
-    remainLimitEl.className = 'summary-value ' + (remainLimit >= 0 ? 'good' : 'over');
+    remainLimitEl.className = 'summary-value ' + (isOver ? 'over' : 'good');
+    remainCardEl.classList.toggle('over-card', isOver);
 
     progressEl.textContent = `${boughtItemCount} / ${activeCount} 品目`;
+
+    // 上部ヘッダーの「＋計画外 〇件追加あり」バッジ更新
+    const extraAlertBadge = document.getElementById('extraAlertBadge');
+    if (extraCount > 0) {
+      extraAlertBadge.textContent = `＋計画外 ${extraCount}件追加あり`;
+      extraAlertBadge.style.display = 'inline-block';
+    } else {
+      extraAlertBadge.style.display = 'none';
+    }
+
+    // フィルターボタンのリアルタイム件数更新
+    const countMap = {
+      all: items.length,
+      unbought: unboughtCount,
+      bought: boughtItemCount,
+      changed: changedCount,
+      extra: extraCount,
+      skipped: skippedCount
+    };
+    const labelMap = {
+      all: 'すべて表示',
+      unbought: '未購入のみ',
+      bought: '購入済のみ',
+      changed: '変更・追加のみ',
+      extra: '計画外のみ',
+      skipped: '買わないリスト'
+    };
+
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      const key = btn.dataset.filter;
+      if (labelMap[key]) {
+        btn.textContent = `${labelMap[key]} (${countMap[key] ?? 0})`;
+      }
+    });
   }
 
   // 現在のフィルターと検索キーワードに一致する表示対象リストを取得
@@ -1121,6 +1983,8 @@
       const settled = isSettledSkipped(item);
       if (currentFilter === 'unbought' && (settled || item.boughtQty !== 0)) return false;
       if (currentFilter === 'bought' && (settled || item.boughtQty === 0)) return false;
+      if (currentFilter === 'changed' && !isChangedOrAddedItem(item)) return false;
+      if (currentFilter === 'extra' && !isExtraItem(item)) return false;
       if (currentFilter === 'skipped' && !settled) return false;
       if (q) {
         const text = `${item.name} ${item.memo || ''}`.toLowerCase();
@@ -1130,8 +1994,21 @@
     });
   }
 
+  // 過不足バッジのHTML生成
+  function buildDiffBadgeHtml(item, hasPlan) {
+    if (!hasPlan || item.skipped) return '';
+    const diff = item.boughtQty - item.planQty;
+    if (diff < 0) {
+      return `<span class="diff-badge shortage">あと${Math.abs(diff)}個</span>`;
+    }
+    if (diff === 0) {
+      return `<span class="diff-badge matched">計画通り✓</span>`;
+    }
+    return `<span class="diff-badge surplus">+${diff}個超過</span>`;
+  }
+
   function render() {
-    // 他の人の更新でリスト再描画が走った際、自分が入力中のフォーカスとカーソル位置を記憶
+    // 他の人の更新でリスト再描画が走った際、自分が入力中の値・フォーカス・カーソル位置を記憶
     let focusState = null;
     const activeEl = document.activeElement;
     if (activeEl && activeEl.dataset && activeEl.dataset.field) {
@@ -1140,6 +2017,7 @@
         focusState = {
           id: parentRow.dataset.id,
           field: activeEl.dataset.field,
+          value: activeEl.value,
           start: activeEl.selectionStart,
           end: activeEl.selectionEnd
         };
@@ -1147,7 +2025,7 @@
     }
 
     items = normalizeOrder(items);
-    updateSummary();
+    updateSummaryAndCounts();
 
     const container = document.getElementById('itemList');
     container.innerHTML = '';
@@ -1159,45 +2037,52 @@
       return;
     }
 
+    const blocked = isEditingBlocked();
     const isUnfilteredAll = currentFilter === 'all' && searchQuery.trim() === '';
 
     filtered.forEach((item, fIdx) => {
       const globalIndex = items.findIndex(i => i.id === item.id);
       const isPendingMove = pendingSkipTimers.has(item.id);
       const isBought = !item.skipped && item.boughtQty > 0;
-      const hasPlan = item.planQty !== null && item.planQty !== undefined;
+      const isHighlighted = highlightedIds.has(item.id);
+      const hasPlan = !isExtraItem(item);
       const actualSubtotal = item.skipped ? 0 : item.price * item.boughtQty;
       const planSubtotal = hasPlan ? item.price * item.planQty : null;
+      const hasMemo = Boolean(item.memo && item.memo.trim());
+      const safeName = escapeHtml(item.name);
+
+      // ロック中・オフライン中または買わない項目は編集不可
+      const rowDisabled = blocked || item.skipped;
 
       // 現在画面に表示されている並び順（filtered）基準で上下移動の可否を判定
-      const canMoveUp = !item.skipped && fIdx > 0 && !filtered[fIdx - 1].skipped;
-      const canMoveDown = !item.skipped && fIdx < filtered.length - 1 && !filtered[fIdx + 1].skipped;
-      const canDrag = !item.skipped && isUnfilteredAll;
+      const canMoveUp = !rowDisabled && fIdx > 0 && !filtered[fIdx - 1].skipped;
+      const canMoveDown = !rowDisabled && fIdx < filtered.length - 1 && !filtered[fIdx + 1].skipped;
+      const canDrag = !rowDisabled && isUnfilteredAll;
 
       const row = document.createElement('div');
-      row.className = `item-row${isBought ? ' bought' : ''}${item.skipped ? ' skipped' : ''}${isPendingMove ? ' pending-move' : ''}`;
+      row.className = `item-row${isBought ? ' bought' : ''}${item.skipped ? ' skipped' : ''}${isPendingMove ? ' pending-move' : ''}${isHighlighted ? ' flash-highlight' : ''}`;
       row.dataset.id = item.id;
       row.draggable = canDrag;
 
       row.innerHTML = `
         <div class="order-controls">
-          <span class="drag-handle${canDrag ? '' : ' is-disabled'}" title="${canDrag ? 'ドラッグして並べ替え' : '全表示時にドラッグ並べ替え可'}">${item.skipped ? '・' : '⠿'}</span>
+          <span class="drag-handle${canDrag ? '' : ' is-disabled'}" title="${canDrag ? 'ドラッグして並べ替え' : '全表示・通信可能時にドラッグ並べ替え可'}">${item.skipped ? '・' : '⠿'}</span>
           <div class="move-btns">
-            <button type="button" class="move-btn" data-action="up" ${canMoveUp ? '' : 'disabled'} title="上へ">▲</button>
-            <button type="button" class="move-btn" data-action="down" ${canMoveDown ? '' : 'disabled'} title="下へ">▼</button>
+            <button type="button" class="move-btn" data-action="up" ${canMoveUp ? '' : 'disabled'} title="上へ" aria-label="${safeName}を1つ上へ移動">▲</button>
+            <button type="button" class="move-btn" data-action="down" ${canMoveDown ? '' : 'disabled'} title="下へ" aria-label="${safeName}を1つ下へ移動">▼</button>
           </div>
         </div>
 
         <div class="row-no">${globalIndex + 1}</div>
 
         <div class="name-col">
-          <input type="text" class="item-name-input" data-field="name" value="${escapeHtml(item.name)}" />
-          <input type="text" class="memo-input" data-field="memo" value="${escapeHtml(item.memo)}" placeholder="メモ（店名・用途など）" />
+          <input type="text" class="item-name-input" data-field="name" value="${safeName}" aria-label="項目名" ${blocked ? 'disabled' : ''} />
+          <input type="text" class="memo-input${hasMemo ? ' has-memo' : ''}" data-field="memo" value="${escapeHtml(item.memo)}" placeholder="メモを追加..." aria-label="${safeName}のメモ" ${blocked ? 'disabled' : ''} />
         </div>
 
         <div class="price-col">
           <span class="mobile-label">単価(税込)</span>
-          <input type="number" class="num-input" data-field="price" value="${item.price}" min="0" step="1" inputmode="numeric" pattern="[0-9]*" />
+          <input type="number" class="num-input" data-field="price" value="${item.price}" min="0" step="1" inputmode="numeric" pattern="[0-9]*" data-autoselect="true" aria-label="${safeName}の単価" ${blocked ? 'disabled' : ''} />
         </div>
 
         <div class="plan-col">
@@ -1208,12 +2093,15 @@
         <div class="qty-col">
           <span class="mobile-label">購入個数</span>
           <div class="qty-stepper">
-            <button type="button" class="step-btn" data-action="dec" ${item.skipped ? 'disabled' : ''}>−</button>
-            <input type="number" data-field="boughtQty" value="${item.boughtQty}" min="0" step="1" inputmode="numeric" pattern="[0-9]*" ${item.skipped ? 'disabled' : ''} />
-            <button type="button" class="step-btn" data-action="inc" ${item.skipped ? 'disabled' : ''}>＋</button>
+            <button type="button" class="step-btn" data-action="dec" ${rowDisabled ? 'disabled' : ''} aria-label="${safeName}の購入個数を1減らす">−</button>
+            <input type="number" data-field="boughtQty" value="${item.boughtQty}" min="0" step="1" inputmode="numeric" pattern="[0-9]*" data-autoselect="true" aria-label="${safeName}の購入個数" ${rowDisabled ? 'disabled' : ''} />
+            <button type="button" class="step-btn" data-action="inc" ${rowDisabled ? 'disabled' : ''} aria-label="${safeName}の購入個数を1増やす">＋</button>
           </div>
           ${hasPlan
-            ? `<button type="button" class="fill-plan-btn" data-action="fillPlan" ${item.skipped ? 'disabled' : ''}>計画通り(${item.planQty})</button>`
+            ? `<div class="qty-sub-row">
+                <button type="button" class="fill-plan-btn" data-action="fillPlan" ${rowDisabled ? 'disabled' : ''} aria-label="${safeName}を計画通りの${item.planQty}個にする">計画(${item.planQty})</button>
+                ${buildDiffBadgeHtml(item, hasPlan)}
+              </div>`
             : `<div class="extra-tag">計画外追加</div>`
           }
         </div>
@@ -1226,18 +2114,18 @@
 
         <div class="skip-col">
           <label class="skip-label">
-            <input type="checkbox" class="skip-checkbox" data-field="skipped" ${item.skipped ? 'checked' : ''} />
+            <input type="checkbox" class="skip-checkbox" data-field="skipped" ${item.skipped ? 'checked' : ''} ${blocked ? 'disabled' : ''} aria-label="${safeName}を買わない対象にする" />
             <span>買わない</span>
             ${isPendingMove ? '<span class="pending-note">2秒後に下へ…</span>' : ''}
           </label>
         </div>
 
         <div class="del-col admin-only" style="text-align:center;">
-          <button type="button" class="del-btn" data-action="delete" title="この行を削除">🗑️</button>
+          <button type="button" class="del-btn" data-action="delete" ${blocked ? 'disabled' : ''} title="この行を削除" aria-label="${safeName}をリストから削除">🗑️</button>
         </div>
       `;
 
-      // ドラッグ＆ドロップイベント（通常項目かつ全表示・検索なし時）
+      // ドラッグ＆ドロップイベント
       if (canDrag) {
         row.addEventListener('dragstart', (e) => {
           draggedItemId = item.id;
@@ -1266,7 +2154,7 @@
         row.addEventListener('drop', (e) => {
           e.preventDefault();
           row.classList.remove('drag-over');
-          if (draggedItemId === null || draggedItemId === item.id) return;
+          if (isEditingBlocked() || draggedItemId === null || draggedItemId === item.id) return;
 
           const sourceId = draggedItemId;
           const targetId = item.id;
@@ -1287,10 +2175,13 @@
       container.appendChild(row);
     });
 
-    // 入力中だった要素へフォーカスを復元
-    if (focusState) {
+    // 入力中だった要素の値とフォーカス・カーソル位置を復元（他人の更新による入力消失を防止）
+    if (focusState && !blocked) {
       const target = container.querySelector(`.item-row[data-id="${focusState.id}"] [data-field="${focusState.field}"]`);
       if (target && !target.disabled) {
+        if (target.type !== 'checkbox') {
+          target.value = focusState.value;
+        }
         target.focus();
         try {
           if (focusState.start !== null && focusState.end !== null) {
@@ -1303,6 +2194,8 @@
 
   // リスト内のクリック操作（すべてトランザクション経由で更新）
   document.getElementById('itemList').addEventListener('click', (e) => {
+    if (isEditingBlocked()) return;
+
     const row = e.target.closest('.item-row');
     if (!row) return;
     const id = Number(row.dataset.id);
@@ -1350,10 +2243,13 @@
 
   // 入力値・チェックボックス変更（トランザクション経由で更新）
   document.getElementById('itemList').addEventListener('change', (e) => {
+    if (isEditingBlocked()) return;
+
     const row = e.target.closest('.item-row');
     if (!row) return;
     const id = Number(row.dataset.id);
-    if (!items.some(i => i.id === id)) return;
+    const currentItem = items.find(i => i.id === id);
+    if (!currentItem) return;
 
     const field = e.target.dataset.field;
     if (!field) return;
@@ -1386,41 +2282,64 @@
     } else if (field === 'name') {
       const val = e.target.value.trim();
       if (val) {
-        applyChange(list => list.map(it => it.id === id ? { ...it, name: val } : it));
+        if (val !== currentItem.name) {
+          applyChange(list => list.map(it => it.id === id ? { ...it, name: val } : it));
+        }
       } else {
         render();
       }
     } else if (field === 'memo') {
       const val = e.target.value;
-      applyChange(
-        list => list.map(it => it.id === id ? { ...it, memo: val } : it),
-        { normalize: false }
-      );
+      if (val !== currentItem.memo) {
+        applyChange(
+          list => list.map(it => it.id === id ? { ...it, memo: val } : it),
+          { normalize: false }
+        );
+      }
     } else if (field === 'price' || field === 'boughtQty') {
       const num = Math.max(0, Math.floor(Number(e.target.value) || 0));
-      applyChange(list => list.map(it => it.id === id ? { ...it, [field]: num } : it));
+      if (num !== currentItem[field]) {
+        applyChange(list => list.map(it => it.id === id ? { ...it, [field]: num } : it));
+      } else {
+        render();
+      }
     }
   });
 
-  // 新規商品追加フォーム（購入個数は0でリスト登録し、後から一覧で入力）
+  // 新規商品追加フォーム（有効リストの最後行へ追加し、自動スクロール＆ハイライト表示）
   document.getElementById('addForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    if (isEditingBlocked()) return;
+
     const nameInput = document.getElementById('newName');
     const priceInput = document.getElementById('newPrice');
+    const qtyInput = document.getElementById('newBoughtQty');
     const memoInput = document.getElementById('newMemo');
 
     const name = nameInput.value.trim();
     if (!name) return;
 
+    const newId = generateUniqueId();
     const newItem = {
-      id: Date.now(),
+      id: newId,
       name,
       price: Math.max(0, Math.floor(Number(priceInput.value) || 0)),
       planQty: null,
-      boughtQty: 0,
+      boughtQty: Math.max(0, Math.floor(Number(qtyInput.value) || 0)),
       skipped: false,
       memo: memoInput.value.trim()
     };
+
+    // フィルターや検索で隠れないよう「すべて表示」に切り替えて追加位置を見せる
+    if (currentFilter !== 'all' || searchQuery.trim() !== '') {
+      currentFilter = 'all';
+      searchQuery = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchClearBtn').style.display = 'none';
+      document.querySelectorAll('[data-filter]').forEach(b => {
+        b.classList.toggle('btn-active', b.dataset.filter === 'all');
+      });
+    }
 
     applyChange(list => {
       const upper = list.filter(i => !isSettledSkipped(i));
@@ -1430,8 +2349,10 @@
 
     nameInput.value = '';
     priceInput.value = '110';
+    qtyInput.value = '1';
     memoInput.value = '';
-    nameInput.focus();
+
+    highlightAndScrollTo([newId], { scroll: true });
   });
 
   // フィルター切替
@@ -1462,21 +2383,66 @@
     searchInputEl.focus();
   });
 
-  // CSV出力（精算・会計まとめ用）
+  // 編集ロック切替（顧問モード専用・パターンA）
+  document.getElementById('toggleLockBtn').addEventListener('click', () => {
+    if (isOffline) return;
+
+    const nextLocked = !isLocked;
+    const msg = nextLocked
+      ? '全員の画面の入力をロック（閲覧専用）にしますか？\n※ロック解除も顧問モードからいつでも行えます。'
+      : '編集ロックを解除して、全員が再び入力できるようにしますか？';
+
+    if (!confirm(msg)) return;
+
+    if (nextLocked) {
+      const hasPending = pendingSkipTimers.size > 0;
+      clearAllPendingTimers();
+      if (hasPending) {
+        applyChange(list => list, { normalize: true, bypassLock: true });
+      }
+    }
+
+    isLocked = nextLocked;
+    applyControlStateUi();
+    render();
+
+    if (lockRef) {
+      lockRef.set(nextLocked).catch(err => {
+        console.error('ロック状態保存エラー:', err);
+        alert('通信エラーによりロック状態を更新できませんでした。');
+      });
+    }
+  });
+
+  // CSV出力（精算・会計まとめ用：合計行・予算差額行付き）
   document.getElementById('exportCsvBtn').addEventListener('click', () => {
     const header = ['No', '項目', '単価(税込)', '計画個数', '購入個数', '購入金額', '状態', 'メモ'];
-    const rows = items.map((item, i) => [
-      i + 1,
-      `"${item.name.replace(/"/g, '""')}"`,
-      item.price,
-      item.planQty === null ? '-' : item.planQty,
-      item.skipped ? 0 : item.boughtQty,
-      item.skipped ? 0 : item.price * item.boughtQty,
-      item.skipped ? '買わない' : (item.boughtQty > 0 ? '購入済' : '未購入'),
-      `"${(item.memo || '').replace(/"/g, '""')}"`
-    ]);
+    let totalActual = 0;
 
-    const csvContent = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const rows = items.map((item, i) => {
+      const subtotal = item.skipped ? 0 : item.price * item.boughtQty;
+      totalActual += subtotal;
+      return [
+        i + 1,
+        `"${item.name.replace(/"/g, '""')}"`,
+        item.price,
+        item.planQty === null ? '-' : item.planQty,
+        item.skipped ? 0 : item.boughtQty,
+        subtotal,
+        item.skipped ? '買わない' : (item.boughtQty > 0 ? '購入済' : '未購入'),
+        `"${(item.memo || '').replace(/"/g, '""')}"`
+      ];
+    });
+
+    const remainLimit = BUDGET_LIMIT - totalActual;
+    const summaryRows = [
+      ['', '', '', '', '', '', '', ''],
+      ['', '"【購入実績 合計】"', '', '', '', totalActual, '', ''],
+      ['', '"【補助金予算 上限】"', '', '', '', BUDGET_LIMIT, '', ''],
+      ['', '"【予算残枠（上限－実績）】"', '', '', '', remainLimit, remainLimit >= 0 ? '予算内' : '予算超過', '']
+    ];
+
+    const csvContent = '\uFEFF' + [header.join(','), ...rows.map(r => r.join(',')), ...summaryRows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1488,21 +2454,17 @@
 
   // JSONバックアップ保存（顧問モード専用）
   document.getElementById('exportJsonBtn').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `yamabukisai_inventory_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBackupJson('yamabukisai_inventory_backup');
   });
 
-  // JSON復元（顧問モード専用・全員の画面へ一括反映）
+  // JSON復元（顧問モード専用・復元前に現在データを自動バックアップ保存）
   document.getElementById('importJsonBtn').addEventListener('click', () => {
+    if (isEditingBlocked()) return;
     document.getElementById('importFileInput').click();
   });
 
   document.getElementById('importFileInput').addEventListener('change', (e) => {
+    if (isEditingBlocked()) return;
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -1510,10 +2472,11 @@
       try {
         const imported = JSON.parse(ev.target.result);
         if (Array.isArray(imported)) {
-          if (confirm('バックアップデータを復元すると、全員の画面のデータも上書きされます。よろしいですか？')) {
+          if (confirm('バックアップデータを復元すると、全員の画面のデータも上書きされます。\n（安全のため、現在のデータの自動バックアップも同時に保存されます）\nよろしいですか？')) {
+            downloadBackupJson('yamabukisai_auto_backup_before_restore');
             clearAllPendingTimers();
             applyChange(() => syncPlanQty(imported));
-            alert('バックアップデータを復元し、全員のリストへ反映しました。');
+            alert('現在のデータの自動バックアップを保存し、新しいバックアップデータを全員のリストへ反映しました。');
           }
         } else {
           alert('ファイル形式が正しくありません。');
@@ -1526,9 +2489,11 @@
     reader.readAsText(file);
   });
 
-  // 初期データリセット（顧問モード専用・全員の画面へ一括反映）
+  // 初期データリセット（顧問モード専用・リセット前に現在データを自動バックアップ保存）
   document.getElementById('resetBtn').addEventListener('click', () => {
-    if (confirm('すべての入力・並び替えをリセットし、全員の画面をExcel提出時の初期データ（28項目）に戻しますか？')) {
+    if (isEditingBlocked()) return;
+    if (confirm('すべての入力・並び替えをリセットし、全員の画面をExcel提出時の初期データ（28項目）に戻しますか？\n（安全のため、現在のデータの自動バックアップも同時に保存されます）')) {
+      downloadBackupJson('yamabukisai_auto_backup_before_reset');
       clearAllPendingTimers();
       applyChange(() => JSON.parse(JSON.stringify(INITIAL_ITEMS)));
     }
