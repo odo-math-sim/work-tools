@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>【教員・顧問用】山吹祭 買い出し・在庫管理 運用マニュアル</title>
+  <style>
+    :root {
+      --primary: #2d5a3c;
+      --primary-light: #e8f1eb;
+      --primary-dark: #1e3f29;
+      --admin: #b91c1c;
+      --admin-light: #fef2f2;
+      --accent: #d97706;
+      --accent-light: #fef3c7;
+      --bg: #f6f7f4;
+      --card: #ffffff;
+      --text: #1f2937;
+      --text-muted: #4b5563;
+      --border: #d1d5db;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding-bottom: 48px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e3f29 0%, #142b1c 100%);
+      color: #fff;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .header-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .admin-pill {
+      background: #dc2626;
+      color: #fff;
+      font-size: 0.74rem;
+      padding: 2px 9px;
+      border-radius: 999px;
+    }
+
+    .header-sub {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      margin-top: 2px;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    main {
+      max-width: 860px;
+      margin: 18px auto;
+      padding: 0 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .method-box {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.9rem;
+    }
+
+    .method-box strong {
+      display: block;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+
+    code {
+      background: #eef2f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 9px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1f5f2;
+      color: var(--primary-dark);
+      font-weight: 700;
+      width: 28%;
+    }
+
+    .timeline {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timeline li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 0.92rem;
+    }
+
+    .phase-tag {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .phase-tag.is-end {
+      background: #b45309;
+    }
+
+    .safe-box {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      padding: 11px 14px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      margin-top: 12px;
+    }
+
+    .warn-box {
+      background: var(--admin-light);
+      border-left: 4px solid #dc2626;
+      color: #7f1d1d;
+      padding: 11px 14px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      margin-top: 12px;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .btn-primary-close {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 11px 22px;
+      border-radius: 8px;
+      font-size: 0.94rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary-close:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-sub-link {
+      background: #fff;
+      color: var(--primary-dark);
+      border: 1px solid var(--border);
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .btn-sub-link:hover {
+      background: #f3f4f6;
+    }
+
+    @media (max-width: 680px) {
+      .method-grid {
+        grid-template-columns: 1fr;
+      }
+      th {
+        width: 34%;
+      }
+    }
+
+    @media print {
+      .back-btn, .footer-actions {
+        display: none !important;
+      }
+      body {
+        background: #fff;
+      }
+      .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-title">
+        <span>📘 買い出し・在庫管理 運用マニュアル</span>
+        <span class="admin-pill">教員・顧問用</span>
+      </div>
+      <div class="header-sub">山吹祭 ハイキング部「ハイキングに行ってきた！」（予算上限：16,000円）</div>
+    </div>
+    <button type="button" class="back-btn" onclick="closeOrBack()">← アプリに戻る</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1. 顧問モードの起動方法（生徒には非表示）</h2>
+    <p style="font-size:0.9rem;">通常アクセス時は生徒向け画面になり、削除ボタンやロック機能は隠れています。顧問が管理操作を行う際は、次のいずれかで起動してください。</p>
+    <div class="method-grid">
+      <div class="method-box">
+        <strong>方法A：タイトル5回連続タップ</strong>
+        画面左上のタイトル「🏔️ 山吹祭 買い出し・在庫管理」を<strong>1.5秒以内に5回連続タップ（クリック）</strong>すると、顧問モードのON/OFFが切り替わります。
+      </div>
+      <div class="method-box">
+        <strong>方法B：顧問専用URLから開く</strong>
+        公開URLの末尾に <code>?admin=1</code> を付けて開くと、最初から顧問モードONで起動します（顧問端末のブックマーク推奨）。
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. 顧問モード専用ボタンの機能一覧</h2>
+    <table>
+      <tbody>
+        <tr>
+          <th>🔒 編集ロックする<br>🔓 ロックを解除する</th>
+          <td>
+            データベース経由で<strong>全員の画面を一斉に「閲覧専用（🔒 ロック中）」</strong>へ切り替えます。<br />
+            生徒から完了連絡を受けたあとの確定処理や、誤操作防止に使用します（解除もいつでも可能です）。
+          </td>
+        </tr>
+        <tr>
+          <th>🗑️ 行削除（各行の右端）</th>
+          <td>
+            生徒が誤って重複登録した計画外アイテムなどを、全員のリストから完全に削除します。
+          </td>
+        </tr>
+        <tr>
+          <th>💾 バックアップ保存</th>
+          <td>
+            現在の全リストデータをJSONファイル（<code>yamabukisai_inventory_backup_日時.json</code>）として手元のPC・スマホへ保存します。
+          </td>
+        </tr>
+        <tr>
+          <th>↺ 初期データに戻す</th>
+          <td>
+            全員の画面を<strong>Excel提出時の初期データ（28項目・購入数0・メモ空欄）</strong>へ一括リセットします。<br />
+            ※安全のため、リセット実行直前に<strong>その時点のデータの自動バックアップ（JSON）が自動ダウンロード</strong>されます。
+          </td>
+        </tr>
+        <tr>
+          <th>📂 復元</th>
+          <td>
+            保存しておいたJSONバックアップファイルを選択し、全員の画面データをその時点の状態へ復旧します（復元前にも現在データの自動バックアップが保存されます）。
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>3. 買い出し前〜終了後の標準運用フロー</h2>
+    <ul class="timeline">
+      <li>
+        <span class="phase-tag">本番前</span>
+        <div>
+          顧問モードを開き <strong>「↺ 初期データに戻す」</strong> を1回実行します。上部の購入実績合計が <strong>0円</strong>、進捗が <strong>0 / 28 品目</strong> になっていることを確認し、生徒へ通常URL（<code>?admin=1</code> なし）を共有します。
+        </div>
+      </li>
+      <li>
+        <span class="phase-tag">買い出し中</span>
+        <div>
+          必要に応じて遠隔からリアルタイムの購入進捗・残枠を確認します。生徒が計画外商品を追加するとヘッダーに <strong>「＋計画外 〇件追加あり」</strong> が表示され、タップで該当行へ移動できます。
+        </div>
+      </li>
+      <li>
+        <span class="phase-tag is-end">終了・確定</span>
+        <div>
+          生徒から完了連絡（Teams等）が入ったら、<strong>「変更・追加のみ」</strong> フィルターで計画との差分・計画外追加分をレシートと照合します。<br />
+          確認後、<strong>「🔒 編集ロックする」</strong> で入力を締め切り、<strong>「📊 CSV出力」</strong> と <strong>「💾 バックアップ保存」</strong> を実行して記録を保管します。
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>4. 会計報告・データ出力（CSV・A4印刷）</h2>
+    <div class="safe-box">
+      <strong>📊 CSV出力（Excel対応）</strong><br />
+      ツールバーの「📊 CSV出力」を押すと、Excelで文字化けしないCSVファイルがダウンロードされます。表の末尾には<strong>「購入実績 合計」「補助金予算 上限（16,000円）」「予算残枠」</strong>の集計行が自動で付与されます。
+    </div>
+    <div class="safe-box">
+      <strong>🖨️ A4印刷・PDF保存</strong><br />
+      ブラウザの印刷機能（<code>Ctrl + P</code>）を実行すると、追加フォーム・ツールバー・並べ替え矢印・ゴミ箱ボタンが自動で非表示になり、<strong>予算サマリーと明細表だけをA4用紙に収まるレイアウト</strong>で出力できます。
+    </div>
+    <div class="warn-box">
+      <strong>⚠️ 安全設計について</strong><br />
+      複数生徒の同時タップによる上書きを防ぐトランザクション同期と、地下店舗など電波切断時の入力一時停止機能を備えています。データベースは専用パス（<code>yamabukisai_hiking_2026</code>）に保存されるため、HTMLファイルを更新してもデータは消えません。
+    </div>
+  </section>
+
+  <div class="footer-actions">
+    <button type="button" class="btn-primary-close" onclick="closeOrBack()">← アプリ画面に戻る</button>
+    <a href="manual_student.html" class="btn-sub-link">📖 生徒用マニュアルも確認する</a>
+  </div>
+</main>
+
+<script>
+  function closeOrBack() {
+    window.close();
+    setTimeout(() => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = './';
+      }
+    }, 150);
+  }
+</script>
+</body>
+</html>
