@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>【生徒用】山吹祭 買い出し・在庫管理 使い方ガイド</title>
+  <style>
+    :root {
+      --primary: #2d5a3c;
+      --primary-light: #e8f1eb;
+      --primary-dark: #1e3f29;
+      --accent: #d97706;
+      --accent-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --bg: #f6f7f4;
+      --card: #ffffff;
+      --text: #1f2937;
+      --text-muted: #4b5563;
+      --border: #d1d5db;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding-bottom: 48px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .header-inner {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .header-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .header-sub {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      margin-top: 2px;
+    }
+
+    .back-btn {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    main {
+      max-width: 820px;
+      margin: 18px auto;
+      padding: 0 14px;
+    }
+
+    .intro-box {
+      background: var(--primary-light);
+      border-left: 5px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 0.92rem;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      background: var(--primary);
+      color: #fff;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-body strong {
+      color: var(--primary-dark);
+    }
+
+    .badge-sample {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    .b-short { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .b-match { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .b-over  { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    .b-extra { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; border-radius: 999px; }
+
+    .note-box {
+      background: var(--accent-light);
+      border: 1px solid #fcd34d;
+      color: #78350f;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-top: 10px;
+    }
+
+    .warn-box {
+      background: var(--danger-light);
+      border: 1px solid #fca5a5;
+      color: #7f1d1d;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mini-card {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+    }
+
+    .mini-card strong {
+      display: block;
+      color: var(--primary-dark);
+      margin-bottom: 3px;
+    }
+
+    .footer-actions {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .btn-primary-close {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary-close:hover {
+      background: var(--primary-dark);
+    }
+
+    @media (max-width: 640px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      .back-btn, .footer-actions {
+        display: none !important;
+      }
+      body {
+        background: #fff;
+      }
+      .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-title">📖 買い出し・在庫管理アプリ 使い方（生徒用）</div>
+      <div class="header-sub">山吹祭 ハイキング部「ハイキングに行ってきた！」</div>
+    </div>
+    <button type="button" class="back-btn" onclick="closeOrBack()">← アプリに戻る</button>
+  </div>
+</header>
+
+<main>
+  <div class="intro-box">
+    このアプリは、買い出しメンバー全員のスマホで<strong>リアルタイムに共有</strong>されます。<br />
+    誰かが数量を入力すると、他の人の画面にも数秒で自動反映されるため、二重買いや予算オーバーを防げます。
+  </div>
+
+  <section class="card">
+    <h2>1. 画面上部の確認（予算上限は 16,000円）</h2>
+    <div class="grid-2">
+      <div class="mini-card">
+        <strong>購入実績 合計</strong>
+        今カゴに入れた（購入した）商品の合計金額です。
+      </div>
+      <div class="mini-card">
+        <strong>上限までの残枠</strong>
+        16,000円から実績を引いた残り金額です。<br />※16,000円を超えると<strong>赤く警告表示</strong>されます。
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. リストにある商品を買ったとき</h2>
+    <ul class="step-list">
+      <li class="step-item">
+        <span class="step-num">1</span>
+        <div class="step-body">
+          <strong>購入個数を入力する</strong><br />
+          商品を見つけたら <strong>「＋」「−」ボタン</strong> で個数を増減するか、数字欄をタップして直接入力します。<br />
+          計画通りの数をまとめて買うときは、下の <strong>「計画(〇)」ボタン</strong> を1回押すだけで一発入力できます。
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">2</span>
+        <div class="step-body">
+          <strong>過不足バッジで買い忘れチェック</strong><br />
+          購入個数の下に状態が自動表示されます：<br />
+          <span class="badge-sample b-short">あと〇個</span>（まだ足りない） /
+          <span class="badge-sample b-match">計画通り✓</span>（完了） /
+          <span class="badge-sample b-over">+〇個超過</span>（計画より多い）
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">3</span>
+        <div class="step-body">
+          <strong>単価・メモの修正（必要な場合のみ）</strong><br />
+          税込価格が計画と違う場合は「単価(税込)」をタップして直せます。購入した店名や用途は「メモを追加...」に記入できます。
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>3. 「買わない」ことにした商品</h2>
+    <p style="font-size:0.92rem;">
+      現地で不要になった商品は、右端の <strong>「買わない」</strong> にチェックを入れてください。<br />
+      合計金額から除外され、<strong>2秒後に自動でリストの一番下</strong>へ移動します（間違えた場合は2秒以内にチェックを外せば元に戻せます）。
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>4. リストにない商品を追加するとき（計画外）</h2>
+    <ul class="step-list">
+      <li class="step-item">
+        <span class="step-num">1</span>
+        <div class="step-body">
+          画面上部の <strong>「＋ 新しい商品をリストに追加（計画外）」</strong> に、項目名・単価（下の <strong>110円 / 220円 / 330円</strong> ボタンでも選択可）・購入個数・メモを入力して <strong>「リストに追加」</strong> を押します。
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">2</span>
+        <div class="step-body">
+          リストの末尾（No.29以降）に追加され、自動でその行へ移動して黄色く光ります。<br />
+          誰かが計画外商品を追加すると、画面上部に <span class="badge-sample b-extra">＋計画外 〇件追加あり</span> が表示され、タップするとその場所へすぐ移動できます。
+        </div>
+      </li>
+    </ul>
+    <div class="note-box">
+      💡 既存リストを広く見たいときは、追加フォーム右上の <strong>「▲ 折りたたむ」</strong> を押すと入力欄を隠せます。
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>5. 便利な探し方・並び替え</h2>
+    <div class="grid-2">
+      <div class="mini-card">
+        <strong>絞り込みボタン・検索</strong>
+        「未購入のみ」「購入済のみ」のボタンや、検索窓に商品名・メモを入れて素早く探せます。
+      </div>
+      <div class="mini-card">
+        <strong>順番の入れ替え</strong>
+        左端の「▲」「▼」ボタンで、売り場順にアイテムを上下へ並べ替えられます。
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>6. 大切な注意事項</h2>
+    <div class="warn-box">
+      <strong>⚠️ 地下店舗などで電波が切れたとき</strong><br />
+      通信が途切れると画面上部に<strong>赤い警告バナー</strong>が表示され、データ消失を防ぐため一時的に入力がロックされます。電波の届く場所へ移動し、上部の表示が <strong>「🟢 リアルタイム同期中」</strong> に戻ってから入力してください。
+    </div>
+    <div class="note-box">
+      <strong>✅ 買い出しが終わったら</strong><br />
+      レシートとアプリの「購入実績 合計」が一致しているか確認し、顧問の先生へTeams等で完了を連絡してください（顧問が確定ロックをかけると閲覧専用になります）。
+    </div>
+  </section>
+
+  <div class="footer-actions">
+    <button type="button" class="btn-primary-close" onclick="closeOrBack()">← アプリ画面に戻る</button>
+  </div>
+</main>
+
+<script>
+  function closeOrBack() {
+    window.close();
+    setTimeout(() => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = './';
+      }
+    }, 150);
+  }
+</script>
+</body>
+</html>
